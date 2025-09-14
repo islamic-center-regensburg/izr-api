@@ -1,0 +1,32 @@
+---
+services:
+  api:
+    build: .
+    volumes:
+    - cache:/code/.cache
+    ports:
+    - 8000:8000
+    environment:
+    - DB_ADMIN_USERNAME=${DB_ADMIN_USERNAME}
+    - DB_ADMIN_PASSWORD=${DB_ADMIN_PASSWORD}
+    - DB_SERVER=db
+    - DB_NAME=${DB_NAME}
+    - DB_PORT=${DB_PORT}
+    - APP_VERSION=${APP_VERSION}
+    depends_on:
+      db:
+        condition: service_started
+
+  db:
+    image: postgres:16-alpine
+    volumes:
+    - db_data:/var/lib/postgresql/data/
+    ports:
+    - 8001:5432
+    environment:
+    - POSTGRES_USER=${DB_ADMIN_USERNAME}
+    - POSTGRES_PASSWORD=${DB_ADMIN_PASSWORD}
+
+volumes:
+  cache:
+  db_data:
