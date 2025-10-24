@@ -1,0 +1,50 @@
+---
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.5.0
+  hooks:
+  - id: end-of-file-fixer
+  - id: trailing-whitespace
+  - id: pretty-format-json
+    args:
+    - --autofix
+    - --no-ensure-ascii
+    - --no-sort-keys
+  - id: check-json
+  - id: check-toml
+    exclude: tests/fixtures/invalid_lock/poetry\.lock
+  - id: check-yaml
+    exclude: mkdocs\.yaml
+  - id: check-ast
+  - id: debug-statements
+  - id: check-docstring-first
+  - id: check-merge-conflict
+  - id: check-case-conflict
+- repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
+  rev: 0.2.3
+  hooks:
+  - id: yamlfmt
+    args: [--mapping, '2', --sequence, '2', --offset, '0', --width, '150']
+    exclude: mkdocs\.yaml
+- repo: https://github.com/pre-commit/pygrep-hooks
+  rev: v1.10.0
+  hooks:
+  - id: python-check-blanket-noqa
+    exclude: tests/
+  - id: python-use-type-annotations
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.3.4
+  hooks:
+  - id: ruff
+    types_or: [python]
+    args: [--fix, --exit-non-zero-on-fix]
+  - id: ruff-format
+- repo: https://github.com/python-poetry/poetry
+  rev: 1.8.0
+  hooks:
+  - id: poetry-check
+  - id: poetry-lock
+    args:
+    - --no-update
+  - id: poetry-install
+    language: system
