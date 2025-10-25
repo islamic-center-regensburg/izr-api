@@ -12,8 +12,8 @@ from src.data_layer.prayer_time.enums import (
 )
 
 
-class PrayerTimeConfiguration(SQLModel, table=True):
-    __tablename__ = "prayer_times"  # pyright: ignore [reportAssignmentType]
+class PrayerTimeConfigurationTable(SQLModel, table=True):
+    __tablename__ = "prayer_time_configurations"  # pyright: ignore [reportAssignmentType]
 
     id: int = Field(default=None, primary_key=True, index=True)
 
