@@ -22,13 +22,15 @@ class PrayerTimeConfigurationTable(SQLModel, table=True):
         description="Calculation method for prayer times"
     )
     school: School = Field(
-        description="Juristic school for Asr prayer time calculation"
+        description="Juristic school for Asr prayer time calculation",
+        default=School.SHAFI,
     )
     midnight_mode: MidnightMode = Field(
-        description="Midnight mode for Isha calculation"
+        default=MidnightMode.STANDARD, description="Midnight mode for Isha calculation"
     )
     latitude_adjustment_method: LatitudeAdjustmentMethod = Field(
-        description="Latitude adjustment method for Fajr and Isha calculation"
+        default=LatitudeAdjustmentMethod.ANGLE_BASED,
+        description="Latitude adjustment method for Fajr and Isha calculation",
     )
     tune: bool = Field(
         default=False, description="Whether the prayer times are manually tuned"

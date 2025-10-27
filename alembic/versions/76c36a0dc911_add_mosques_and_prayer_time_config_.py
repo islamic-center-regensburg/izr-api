@@ -1,8 +1,8 @@
 """add_mosques_and_prayer_time_config_tables
 
-Revision ID: b8b9a521025f
+Revision ID: 76c36a0dc911
 Revises:
-Create Date: 2025-10-25 15:57:52.134340
+Create Date: 2025-10-27 07:53:12.444220
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = "b8b9a521025f"
+revision: str = "76c36a0dc911"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None

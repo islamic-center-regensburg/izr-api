@@ -1,3 +1,4 @@
+from src.controller_layer.prayer_time.model import PrayerTimeConfigurationIn
 from src.data_layer.mosque.operation import MosqueOperation
 from src.data_layer.prayer_time.operation import PrayerTimeOperation
 from aladhan import Coordinates, Client
@@ -29,3 +30,11 @@ class PrayerTimeComponent:
         client = Client(coordinates)
         prayer_times = client.get_today_times()
         return prayer_times
+
+    def add_prayer_time_configuration(
+        self, mosque_id: str, config_data: PrayerTimeConfigurationIn
+    ):
+        prayer_time_config = self.prayer_time_operation.add_prayer_time_configuration(
+            mosque_id, config_data
+        )
+        return prayer_time_config

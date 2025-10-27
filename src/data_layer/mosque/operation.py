@@ -10,3 +10,17 @@ class MosqueOperation:
         with self.db_repository.get_database_repository() as db:
             mosque = db.get_by_id(MosqueTable, mosque_id)
             return mosque
+
+    def add_mosque(self, mosque_data):
+        with self.db_repository.get_database_repository() as db:
+            mosque_record = MosqueTable(
+                name=mosque_data.name,
+                address=mosque_data.address,
+                latitude=mosque_data.latitude,
+                longitude=mosque_data.longitude,
+                city=mosque_data.city,
+                country=mosque_data.country,
+                timezone=mosque_data.timezone,
+            )
+            mosque = db.create(mosque_record)
+            return mosque

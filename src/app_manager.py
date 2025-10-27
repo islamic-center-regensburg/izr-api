@@ -1,6 +1,8 @@
 import contextlib
 import logging
+from src.component_layer.mosque.component import MosqueComponent
 from src.component_layer.prayer_time.component import PrayerTimeComponent
+from src.controller_layer.mosque.controller import MosqueController
 from src.controller_layer.prayer_time.controller import PrayerTimeController
 from src.data_layer.mosque.operation import MosqueOperation
 from src.data_layer.prayer_time.operation import PrayerTimeOperation
@@ -45,6 +47,11 @@ class AppManager:
             self.__database_repository_provider
         )
         self.__mosque_operation = MosqueOperation(self.__database_repository_provider)
+        self.__mosque_component = MosqueComponent(
+            mosque_operation=self.__mosque_operation
+        )
+        self.__mosque_controller = MosqueController(self.__mosque_component)
+
         self.__prayer_time_component = PrayerTimeComponent(
             prayer_time_operation=self.__prayer_time_operation,
             mosque_operation=self.__mosque_operation,
@@ -90,6 +97,7 @@ class AppManager:
     def __add_routers(self):
         for controller in [
             self.__prayer_time_controller,
+            self.__mosque_controller,
         ]:
             self.__app.include_router(controller.get_router())
 
