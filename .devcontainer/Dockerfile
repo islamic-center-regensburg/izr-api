@@ -4,6 +4,10 @@ FROM mcr.microsoft.com/devcontainers/python:3.12-bookworm
 RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/opt/poetry python3 -
 ENV PATH="/opt/poetry/bin:$PATH"
 
+USER root
+RUN mkdir -p /home/vscode/.cache && chown -R vscode:vscode /home/vscode/.cache
+USER vscode
+
 # Optional: preinstall deps
 WORKDIR /workspace
 

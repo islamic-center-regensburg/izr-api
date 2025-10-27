@@ -7,7 +7,7 @@
   "workspaceFolder": "/workspace",
   "remoteUser": "vscode",
   "mounts": [
-    "source=${env:HOME}/.ssh,target=/vscode/.ssh,type=bind,consistency=cached"
+    "source=${env:HOME}/.ssh,target=/home/vscode/.ssh,type=bind,consistency=cached"
   ],
   "postCreateCommand": "poetry install",
   "customizations": {
