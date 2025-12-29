@@ -1,25 +1,21 @@
 from typing import Optional
-
-from sqlmodel import Field, SQLModel
+from pydantic import BaseModel, Field
 
 from src.data_layer.prayer_time.enums import (
-    CalculationMethod,
     CalendarMethod,
     LatitudeAdjustmentMethod,
     MidnightMode,
     School,
     Shafaq,
+    CalculationMethod,
 )
 
 
-class PrayerTimeConfigurationTable(SQLModel, table=True):
-    __tablename__ = "prayer_time_configurations"  # pyright: ignore [reportAssignmentType]
-
-    id: int = Field(default=None, primary_key=True, index=True)
-
-    mosque_id: int = Field(foreign_key="mosques.id", index=True)
+class PrayerTimeConfigurationIn(BaseModel):
+    mosque_id: str
     calculation_method: CalculationMethod = Field(
-        description="Calculation method for prayer times"
+        default=CalculationMethod.JAFARI,
+        description="Calculation method for prayer times",
     )
     school: School = Field(
         description="Juristic school for Asr prayer time calculation",

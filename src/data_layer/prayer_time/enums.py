@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import IntEnum, StrEnum
 
 
-class CalculationMethod(Enum):
+class CalculationMethod(IntEnum):
     JAFARI = 0
     KARACHI = 1
     ISNA = 2
@@ -28,29 +28,29 @@ class CalculationMethod(Enum):
     CUSTOM = 99
 
 
-class School(Enum):
+class School(IntEnum):
     SHAFI = 0
     HANAFI = 1
 
 
-class MidnightMode(Enum):
+class MidnightMode(IntEnum):
     STANDARD = 0
     JAFARI = 1
 
 
-class LatitudeAdjustmentMethod(Enum):
+class LatitudeAdjustmentMethod(IntEnum):
     MIDDLE_OF_THE_NIGHT = 1
     ONE_SEVENTH = 2
     ANGLE_BASED = 3
 
 
-class Shafaq(Enum):
+class Shafaq(StrEnum):
     GENERAL = "general"
     AHMER = "ahmer"
     ABYAD = "abyad"
 
 
-class CalendarMethod(Enum):
+class CalendarMethod(StrEnum):
     HJCoSA = "HJCoSA"
     UAQ = "UAQ"
     DIYANET = "DIYANET"

@@ -1,7 +1,7 @@
 from sqlmodel import Field, SQLModel
 
 
-class Mosque(SQLModel, table=True):
+class MosqueTable(SQLModel, table=True):
     __tablename__ = "mosques"  # pyright: ignore [reportAssignmentType]
 
     id: int = Field(default=None, primary_key=True, index=True)

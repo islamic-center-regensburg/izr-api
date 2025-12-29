@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "API for IZR App based on FastAPI"
 authors = ["Marouene Zouaoui <marouene.zouaoui@outlook.com>"]
 readme = "README.md"
+package-mode = false
 
 [tool.poetry-dynamic-versioning]
 enable = true
@@ -13,7 +14,7 @@ fix-shallow-repository = true
 
 
 [tool.poetry.dependencies]
-python = "3.12.11"
+python = "~3.12"
 uvicorn = "^0.35.0"
 fastapi = "^0.116.1"
 sqlmodel = "^0.0.24"

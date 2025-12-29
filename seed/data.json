@@ -1,0 +1,57 @@
+{
+  "mosques": [
+    {
+      "name": "Islamishes Zentrum Regensburg",
+      "address": "Alte Straubinger Str. 33",
+      "latitude": "49.007734",
+      "longitude": "12.102841",
+      "city": "Regensburg",
+      "country": "Germany",
+      "timezone": "UTC"
+    }
+  ],
+  "prayer_time_configurations": [
+    {
+      "mosque_id": "__PLACEHOLDER__",
+      "calculation_method": 99,
+      "school": 0,
+      "midnight_mode": 0,
+      "latitude_adjustment_method": 1,
+      "tune": false,
+      "imsak_tune": 0,
+      "fajr_tune": 0,
+      "sunrise_tune": 0,
+      "dhuhr_tune": 0,
+      "asr_tune": 0,
+      "maghrib_tune": 0,
+      "isha_tune": 0,
+      "midnight_tune": 0,
+      "fajr_angle": 12.0,
+      "maghrib_angle": null,
+      "isha_angle": 12.0,
+      "shafaq": "general",
+      "calendar_method": "HJCoSA"
+    },
+    {
+      "mosque_id": "__PLACEHOLDER__",
+      "calculation_method": 99,
+      "school": 0,
+      "midnight_mode": 0,
+      "latitude_adjustment_method": 1,
+      "tune": true,
+      "imsak_tune": -5,
+      "fajr_tune": -2,
+      "sunrise_tune": 1,
+      "dhuhr_tune": 2,
+      "asr_tune": 1,
+      "maghrib_tune": 3,
+      "isha_tune": 2,
+      "midnight_tune": 0,
+      "fajr_angle": 18.0,
+      "maghrib_angle": 0.0,
+      "isha_angle": 17.0,
+      "shafaq": "general",
+      "calendar_method": "DIYANET"
+    }
+  ]
+}

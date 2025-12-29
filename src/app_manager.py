@@ -1,11 +1,16 @@
 import contextlib
 import logging
+from src.component_layer.mosque.component import MosqueComponent
+from src.component_layer.prayer_time.component import PrayerTimeComponent
+from src.controller_layer.mosque.controller import MosqueController
+from src.controller_layer.prayer_time.controller import PrayerTimeController
+from src.data_layer.mosque.operation import MosqueOperation
+from src.data_layer.prayer_time.operation import PrayerTimeOperation
 from src.logger.logger import logger
 
 from fastapi import FastAPI
 from pydantic import Field
 from pydantic_settings import BaseSettings
-from starlette.middleware.cors import CORSMiddleware
 
 from src.data_layer.db.database_connection import DatabaseConnection
 from src.data_layer.db.database_repository_provider import DatabaseRepositoryProvider
@@ -37,6 +42,23 @@ class AppManager:
         # self.__cors_settings = app_manager_settings.cors_settings
 
         self.__database_repository_provider = DatabaseRepositoryProvider(db_connection)
+
+        self.__prayer_time_operation = PrayerTimeOperation(
+            self.__database_repository_provider
+        )
+        self.__mosque_operation = MosqueOperation(self.__database_repository_provider)
+        self.__mosque_component = MosqueComponent(
+            mosque_operation=self.__mosque_operation
+        )
+        self.__mosque_controller = MosqueController(self.__mosque_component)
+
+        self.__prayer_time_component = PrayerTimeComponent(
+            prayer_time_operation=self.__prayer_time_operation,
+            mosque_operation=self.__mosque_operation,
+        )
+        self.__prayer_time_controller = PrayerTimeController(
+            self.__prayer_time_component
+        )
 
     @contextlib.asynccontextmanager
     async def __lifespan(self, app: FastAPI):
@@ -74,16 +96,17 @@ class AppManager:
 
     def __add_routers(self):
         for controller in [
-            # add controllers here
+            self.__prayer_time_controller,
+            self.__mosque_controller,
         ]:
             self.__app.include_router(controller.get_router())
 
-    def __add_middlewares(self):
-        logger.info(f"Allowed origins: {self.__cors_settings.frontend_url}")
-        self.__app.add_middleware(
-            CORSMiddleware,
-            allow_origins=[self.__cors_settings.frontend_url],
-            allow_methods=["*"],
-            allow_headers=["*"],
-            allow_credentials=True,
-        )
+    # def __add_middlewares(self):
+    #     logger.info(f"Allowed origins: {self.__cors_settings.frontend_url}")
+    #     self.__app.add_middleware(
+    #         CORSMiddleware,
+    #         allow_origins=[self.__cors_settings.frontend_url],
+    #         allow_methods=["*"],
+    #         allow_headers=["*"],
+    #         allow_credentials=True,
+    #     )
