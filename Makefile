@@ -1,6 +1,30 @@
+# --------------------------------------
+# Main Makefile
+# --------------------------------------
+ROOT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-dev:
-	poetry run uvicorn src.main:app --host 0.0.0.0 --reload
 
-seed:
-	poetry run env PYTHONPATH=. python seed/seed.py
+include scripts/make/*.mk
+
+.DEFAULT_GOAL := help
+
+.PHONY: help
+
+help:
+	@echo ""
+	@echo "Available commands:"
+	@echo ""
+	@echo "  Docker:"
+	@echo "    make docker-up        Start stack"
+	@echo "    make docker-down      Stop stack"
+	@echo "    make docker-restart   Restart stack"
+	@echo "    make docker-build     Build images"
+	@echo "    make docker-logs      Follow logs"
+	@echo "    make docker-ps        List containers"
+	@echo ""
+	@echo "  Python / UV:"
+	@echo "    make deps             Create venv + install deps"
+	@echo "    make deps-sync        Sync from lockfile"
+	@echo "    make deps-update      Upgrade deps"
+	@echo "    make deps-clean       Remove venv"
+	@echo ""
