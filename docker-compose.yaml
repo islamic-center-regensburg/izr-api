@@ -1,0 +1,7 @@
+---
+include:
+- docker/api.compose.yaml
+- docker/db.compose.yaml
+
+networks:
+  izr-api-net:
