@@ -1,5 +1,5 @@
-from src.dependencies import db_connection
-from src.app_manager import AppManager, AppManagerSettings
+from src.core.dependencies import db_connection
+from src.core.app_manager import AppManager, AppManagerSettings
 
 app_manager_settings = AppManagerSettings()
 app = AppManager(
