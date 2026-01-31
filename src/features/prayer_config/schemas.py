@@ -73,6 +73,10 @@ class PrayerConfigurationBase(SQLModel):
         description="Method for Islamic calendar calculation",
     )
 
+    adjustment: int = Field(
+        default=0, le=2, ge=-2, description="Days to adjust the Hijri date"
+    )
+
 
 class PrayerConfigurationTable(PrayerConfigurationBase, table=True):
     __tablename__ = "prayer_configurations"  # pyright: ignore [reportAssignmentType]
