@@ -10,6 +10,9 @@
       "request": "launch",
       "module": "uvicorn",
       "args": ["src.main:app", "--host", "0.0.0.0", "--reload"],
+      "env": {
+          "PYTHONPATH": "${workspaceFolder}/src"
+      },
       "jinja": true
     }
   ]
