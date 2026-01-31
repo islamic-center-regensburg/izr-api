@@ -16,6 +16,9 @@ from pydantic_settings import BaseSettings
 from src.core.db.database_connection import DatabaseConnection
 from src.core.db.database_repository_provider import DatabaseRepositoryProvider
 from src.core.db.database_settings import DatabaseSettings
+from src.features.prayer_times.component import PrayerTimesComponent
+from src.features.prayer_times.controller import PrayerTimesController
+from src.features.prayer_times.operation import PrayerTimesOperation
 
 
 class AppManagerSettings(BaseSettings):
@@ -61,6 +64,20 @@ class AppManager:
             self.__prayer_config_component
         )
 
+        self.__prayer_times_operation = PrayerTimesOperation(
+            self.__database_repository_provider
+        )
+
+        self.__prayer_times_component = PrayerTimesComponent(
+            prayer_times_operation=self.__prayer_times_operation,
+            mosque_operation=self.__mosque_operation,
+            prayer_config_operation=self.__prayer_config_operation,
+        )
+
+        self.__prayer_times_controller = PrayerTimesController(
+            self.__prayer_times_component
+        )
+
     @contextlib.asynccontextmanager
     async def __lifespan(self, app: FastAPI):
         self.__init_logger()
@@ -97,8 +114,9 @@ class AppManager:
 
     def __add_routers(self):
         for controller in [
-            self.__prayer_config_controller,
             self.__mosque_controller,
+            self.__prayer_config_controller,
+            self.__prayer_times_controller,
         ]:
             self.__app.include_router(controller.get_router())
 
