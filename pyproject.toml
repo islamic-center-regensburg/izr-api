@@ -1,31 +1,17 @@
-[tool.poetry]
+[project]
 name = "izr-api"
 version = "0.1.0"
-description = "API for IZR App based on FastAPI"
-authors = ["Marouene Zouaoui <marouene.zouaoui@outlook.com>"]
-readme = "README.md"
-package-mode = false
-
-[tool.poetry-dynamic-versioning]
-enable = true
-style = "semver"
-strict = true
-fix-shallow-repository = true
-
-
-[tool.poetry.dependencies]
-python = "~3.12"
-uvicorn = "^0.35.0"
-fastapi = "^0.116.1"
-sqlmodel = "^0.0.24"
-psycopg2-binary = "^2.9.10"
-gunicorn = "^23.0.0"
-alembic = "^1.16.5"
-pydantic-settings = "^2.10.1"
-dotenv = "^0.9.9"
-aladhan-api = "^6.1.0"
-
-
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires-python = ">=3.12"
+dependencies = [
+    "aladhan-api>=6.1.0",
+    "alembic>=1.17.2",
+    "dotenv>=0.9.9",
+    "fastapi>=0.128.0",
+    "gunicorn>=23.0.0",
+    "psycopg2-binary>=2.9.11",
+    "pydantic>=2.12.5",
+    "pydantic-settings>=2.12.0",
+    "sqlalchemy>=2.0.45",
+    "sqlmodel>=0.0.31",
+    "uvicorn>=0.40.0",
+]

@@ -1,7 +1,7 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
-*$py.class
+*$py.classdocker.env
 
 # C extensions
 *.so
@@ -136,6 +136,7 @@ celerybeat.pid
 
 # Environments
 .env
+docker.env
 .envrc
 .venv
 env/

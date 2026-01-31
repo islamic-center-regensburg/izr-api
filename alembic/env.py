@@ -3,8 +3,8 @@ from dotenv import load_dotenv
 from sqlalchemy import MetaData
 from sqlmodel import SQLModel
 
-from src.data_layer.mosque.schema import MosqueTable
-from src.data_layer.prayer_time.schema import PrayerTimeConfigurationTable
+from src.features.mosque.schemas import MosqueTable
+from src.features.prayer_config.schemas import PrayerConfigurationTable
 
 
 class DatabaseMigration:
@@ -18,7 +18,7 @@ class DatabaseMigration:
     def __get_target_metadata() -> MetaData:
         for model in {
             MosqueTable,
-            PrayerTimeConfigurationTable,
+            PrayerConfigurationTable,
         }:
             model()
         return SQLModel.metadata
@@ -36,8 +36,8 @@ class DatabaseMigration:
             context.run_migrations()
 
     def __run_migrations_online(self) -> None:
-        from src.data_layer.db.database_connection import DatabaseConnection
-        from src.data_layer.db.database_settings import DatabaseSettings
+        from src.core.db.database_connection import DatabaseConnection
+        from src.core.db.database_settings import DatabaseSettings
 
         connectable = DatabaseConnection(DatabaseSettings()).engine
 

@@ -1,0 +1,23 @@
+---
+services:
+  api:
+    build: ..
+    volumes:
+    - cache:/code/.cache
+    ports:
+    - 8000:8000
+    environment:
+    - DB_ADMIN_USERNAME=${DB_ADMIN_USERNAME}
+    - DB_ADMIN_PASSWORD=${DB_ADMIN_PASSWORD}
+    - DB_SERVER=${DB_SERVER}
+    - DB_NAME=${DB_NAME}
+    - DB_PORT=${DB_PORT}
+    - APP_VERSION=${APP_VERSION}
+    depends_on:
+      db:
+        condition: service_started
+    networks:
+    - izr-api-net
+
+volumes:
+  cache:

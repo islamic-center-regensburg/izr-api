@@ -1,16 +1,26 @@
 {
   "mosques": [
     {
-      "name": "Islamishes Zentrum Regensburg",
-      "address": "Alte Straubinger Str. 33",
-      "latitude": "49.007734",
-      "longitude": "12.102841",
-      "city": "Regensburg",
-      "country": "Germany",
-      "timezone": "UTC"
+      "id": "Moschee Arrahman",
+      "name": "Moschee Arrahman",
+      "address": "Al Noor Street 12",
+      "city": "Cairo",
+      "country": "Egypt",
+      "latitude": 30.0444,
+      "longitude": 31.2357,
+      "timezone": "Africa/Cairo"
+    },
+    {
+      "name": "Masjid Al-Falah",
+      "address": "Jl. Sudirman No. 45",
+      "city": "Jakarta",
+      "country": "Indonesia",
+      "latitude": -6.2088,
+      "longitude": 106.8456,
+      "timezone": "Asia/Jakarta"
     }
   ],
-  "prayer_time_configurations": [
+  "prayer_configs": [
     {
       "mosque_id": "__PLACEHOLDER__",
       "calculation_method": 99,

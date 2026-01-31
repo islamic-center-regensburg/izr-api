@@ -10,7 +10,9 @@ repos:
     - --autofix
     - --no-ensure-ascii
     - --no-sort-keys
+    exclude: .vscode/launch.json
   - id: check-json
+    exclude: .vscode/launch.json
   - id: check-toml
     exclude: tests/fixtures/invalid_lock/poetry\.lock
   - id: check-yaml
@@ -39,12 +41,3 @@ repos:
     types_or: [python]
     args: [--fix, --exit-non-zero-on-fix]
   - id: ruff-format
-- repo: https://github.com/python-poetry/poetry
-  rev: 1.8.0
-  hooks:
-  - id: poetry-check
-  - id: poetry-lock
-    args:
-    - --no-update
-  - id: poetry-install
-    language: system
