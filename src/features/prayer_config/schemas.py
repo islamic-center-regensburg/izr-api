@@ -1,5 +1,6 @@
 from typing import Optional
 
+from pydantic import model_validator
 from sqlmodel import Field, SQLModel
 
 from src.core.db.pagination import PageParams
@@ -77,19 +78,37 @@ class PrayerConfigurationBase(SQLModel):
         default=0, le=2, ge=-2, description="Days to adjust the Hijri date"
     )
 
+    @model_validator(mode="after")
+    def validate_custom_angles(self):
+        if self.calculation_method == CalculationMethod.CUSTOM:
+            missing = []
+            if self.fajr_angle is None:
+                missing.append("fajr_angle")
+            if self.isha_angle is None:
+                missing.append("isha_angle")
+            if missing:
+                raise ValueError(
+                    "Custom calculation method requires angles: " + ", ".join(missing)
+                )
+        return self
+
 
 class PrayerConfigurationTable(PrayerConfigurationBase, table=True):
     __tablename__ = "prayer_configurations"  # pyright: ignore [reportAssignmentType]
     id: int = Field(default=None, primary_key=True, index=True)
 
 
-class PrayerTimeConfigurationIn(PrayerConfigurationBase):
+class PrayerConfigurationIn(PrayerConfigurationBase):
     pass
 
 
-class PrayerTimeConfigurationOut(PrayerTimeConfigurationIn):
+class PrayerConfigurationOut(PrayerConfigurationIn):
     id: int
     mosque_id: int
+
+
+class PrayerConfiguration(PrayerConfigurationOut):
+    pass
 
 
 class PrayerTimeConfigurationUpdate(SQLModel):
