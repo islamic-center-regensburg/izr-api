@@ -7,13 +7,13 @@ from seed import seed_mosques, seed_prayer_configs
 from src.core.logging.logger import logger
 from src.core.dependencies import db_connection
 from src.features.mosque.schemas import MosqueIn
-from src.features.prayer_config.schemas import PrayerTimeConfigurationIn
+from src.features.prayer_config.schemas import PrayerConfigurationIn
 from src.core.db.database_repository_provider import DatabaseRepositoryProvider
 
 
 class SeedData(BaseModel):
     mosques: list[MosqueIn]
-    prayer_configs: list[PrayerTimeConfigurationIn]
+    prayer_configs: list[PrayerConfigurationIn]
 
 
 def load():
@@ -36,10 +36,8 @@ def main():
             db_connection
         )
 
-        mosques_ids = seed_mosques.seed(data.mosques, db_repository_provider)
-        seed_prayer_configs.seed(
-            data.prayer_configs, mosques_ids, db_repository_provider
-        )
+        seed_mosques.seed(data.mosques, db_repository_provider)
+        seed_prayer_configs.seed(data.prayer_configs, db_repository_provider)
         logger.info("==> Data Seeding done")
     except Exception as e:
         logger.error("Error while seeding data !", e)

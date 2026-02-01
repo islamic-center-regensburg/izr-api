@@ -1,7 +1,6 @@
 {
   "mosques": [
     {
-      "id": "Moschee Arrahman",
       "name": "Moschee Arrahman",
       "address": "Al Noor Street 12",
       "city": "Cairo",
@@ -22,7 +21,7 @@
   ],
   "prayer_configs": [
     {
-      "mosque_id": "__PLACEHOLDER__",
+      "mosque_id": 1,
       "calculation_method": 99,
       "school": 0,
       "midnight_mode": 0,
@@ -40,10 +39,11 @@
       "maghrib_angle": null,
       "isha_angle": 12.0,
       "shafaq": "general",
+      "adjustment": 0,
       "calendar_method": "HJCoSA"
     },
     {
-      "mosque_id": "__PLACEHOLDER__",
+      "mosque_id": 2,
       "calculation_method": 99,
       "school": 0,
       "midnight_mode": 0,
@@ -61,6 +61,7 @@
       "maghrib_angle": 0.0,
       "isha_angle": 17.0,
       "shafaq": "general",
+      "adjustment": 1,
       "calendar_method": "DIYANET"
     }
   ]

@@ -1,5 +1,11 @@
 import contextlib
 import logging
+
+from fastapi.exceptions import RequestValidationError
+from src.core.exceptions import (
+    core_validation_exception_handler,
+    request_validation_exception_handler,
+)
 from src.features.mosque.component import MosqueComponent
 from src.features.prayer_config.component import PrayerConfigComponent
 from src.features.mosque.controller import MosqueController
@@ -11,6 +17,7 @@ from src.core.logging.logger import logger
 
 from fastapi import FastAPI
 from pydantic import Field
+from pydantic_core import ValidationError as CoreValidationError
 from pydantic_settings import BaseSettings
 
 from src.core.db.database_connection import DatabaseConnection
@@ -41,6 +48,16 @@ class AppManager:
             title=app_manager_settings.title,
             version=app_manager_settings.version,
             lifespan=self.__lifespan,
+        )
+
+        self.__app.add_exception_handler(
+            RequestValidationError,
+            request_validation_exception_handler,
+        )
+
+        self.__app.add_exception_handler(
+            CoreValidationError,
+            core_validation_exception_handler,
         )
         # self.__app_manager_settings = app_manager_settings
         # self.__cors_settings = app_manager_settings.cors_settings
