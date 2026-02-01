@@ -12,6 +12,7 @@ from src.features.prayer_times.enums import PrayerTimesSource
 
 class PrayerTimesBase(SQLModel):
     fajr: str = Field(..., description="Time for Fajr prayer")
+    shuruq: str = Field(..., description="Time for Shuruq")
     dhuhr: str = Field(..., description="Time for Dhuhr prayer")
     asr: str = Field(..., description="Time for Asr prayer")
     maghrib: str = Field(..., description="Time for Maghrib prayer")

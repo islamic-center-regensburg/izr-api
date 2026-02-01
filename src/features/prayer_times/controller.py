@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from src.core.db.database_repository import DoesNotExistInDatabaseException
 from src.core.logging.logger import logger
 from src.core.router.router_builder import EndpointType, RouterBuilder
 from src.features.prayer_times.component import PrayerTimesComponent
@@ -50,6 +51,10 @@ class PrayerTimesController:
         try:
             return self.__prayer_times_component.get_prayer_times_for_mosque(
                 mosque_id, source, filters
+            )
+        except DoesNotExistInDatabaseException:
+            raise HTTPException(
+                status_code=404, detail="Mosque or Prayer Configuration not found"
             )
         except Exception as e:
             logger.error("Internal server error", exc_info=True)

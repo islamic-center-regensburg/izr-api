@@ -1,6 +1,5 @@
 from src.features.mosque.operation import MosqueOperation
 from src.features.prayer_config.operation import PrayerConfigOperation
-from src.features.prayer_config.schemas import PrayerConfigurationFilter
 from src.features.prayer_times.operation import PrayerTimesOperation
 from src.features.prayer_times.enums import PrayerTimesSource
 from src.features.prayer_times.schemas import (
@@ -35,16 +34,13 @@ class PrayerTimesComponent:
     ):
         match source.source:
             case PrayerTimesSource.API:
-                prayer_cfg_filters = PrayerConfigurationFilter(mosque_id=mosque_id)
-                cfg = self.__prayer_config_operation.get_all_prayer_configurations(
-                    prayer_cfg_filters
-                )
-                if not cfg.data:
+                mosque = self.__mosque_operation.get_mosque_by_id(mosque_id)
+                cfg = self.__prayer_config_operation.get_by_id(mosque.prayer_config_id)
+                if not cfg:
                     raise ValueError("No prayer configuration found for the mosque")
 
-                mosque = self.__mosque_operation.get_mosque_by_id(mosque_id)
                 return self.__prayer_times_operation.fetch_prayer_times_for_mosque(
-                    prayer_config=cfg.data[0], mosque=mosque, filters=filters
+                    prayer_config=cfg, mosque=mosque, filters=filters
                 )
 
             case PrayerTimesSource.STORED:

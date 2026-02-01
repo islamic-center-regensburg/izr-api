@@ -37,12 +37,15 @@ class PrayerTimesTimingsParamsQueryAdapter:
 
 class AlAdhanTimings(BaseModel):
     Fajr: str
+    Sunrise: str
     Dhuhr: str
     Asr: str
     Maghrib: str
     Isha: str
 
-    @field_validator("Fajr", "Dhuhr", "Asr", "Maghrib", "Isha", mode="before")
+    @field_validator(
+        "Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha", mode="before"
+    )
     @classmethod
     def validate_timing_format(cls, v: str) -> str:
         if isinstance(v, str):
@@ -122,6 +125,7 @@ class AlAdhanPrayerTimesAdapter:
     def __convert_item(self, item: AlAdhanPrayerTimesItem) -> PrayerTimesOut:
         return PrayerTimesOut(
             fajr=item.timings.Fajr,
+            shuruq=item.timings.Sunrise,
             dhuhr=item.timings.Dhuhr,
             asr=item.timings.Asr,
             maghrib=item.timings.Maghrib,
