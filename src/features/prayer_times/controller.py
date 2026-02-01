@@ -1,12 +1,12 @@
-from fastapi import APIRouter, Depends
-from src.core.db.pagination import PaginatedResponse
+from fastapi import APIRouter, Depends, HTTPException
+from src.core.logging.logger import logger
 from src.core.router.router_builder import EndpointType, RouterBuilder
 from src.features.prayer_times.component import PrayerTimesComponent
 from src.features.prayer_times.schemas import (
     PrayerTimesFilter,
-    PrayerTimesGenericParams,
     PrayerTimesOut,
     PrayerTimesSourceParams,
+    PrayerTimesTimingsParams,
 )
 
 
@@ -27,19 +27,19 @@ class PrayerTimesController:
         router_builder.add_method(
             "/{mosque_id}",
             endpoint_type=EndpointType.LIST,
-            response_model=PaginatedResponse[PrayerTimesOut],
+            response_model=list[PrayerTimesOut],
             endpoint=self.__get_prayer_times_for_mosque,
             summary="Get Prayer Times for a specific mosque",
         )
 
         return router_builder.get_router()
 
-    def __get_prayer_times(
-        self,
-        params: PrayerTimesGenericParams = Depends(),
-        filters: PrayerTimesFilter = Depends(),
-    ):
-        return self.__prayer_times_component.get_prayer_times(params, filters)
+    def __get_prayer_times(self, params: PrayerTimesTimingsParams = Depends()):
+        try:
+            return self.__prayer_times_component.get_prayer_times(params)
+        except Exception:
+            logger.error("Internal server error", exc_info=True)
+            raise HTTPException(status_code=500, detail="Internal server error")
 
     def __get_prayer_times_for_mosque(
         self,
@@ -47,6 +47,10 @@ class PrayerTimesController:
         source: PrayerTimesSourceParams = Depends(),
         filters: PrayerTimesFilter = Depends(),
     ):
-        return self.__prayer_times_component.get_prayer_times_for_mosque(
-            mosque_id, source, filters
-        )
+        try:
+            return self.__prayer_times_component.get_prayer_times_for_mosque(
+                mosque_id, source, filters
+            )
+        except Exception as e:
+            logger.error("Internal server error", exc_info=True)
+            raise HTTPException(status_code=500, detail="Internal server error") from e

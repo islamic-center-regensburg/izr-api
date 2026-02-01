@@ -1,61 +1,90 @@
 from __future__ import annotations
 
-from datetime import date as dt_date
-from typing import Optional, Union, Any
+from datetime import date
+from typing import Any, Union
 
-import aladhan
+import httpx
+
+from src.features.mosque.adapter import MosqueQueryAdapter
+from src.features.mosque.schemas import MosqueBase
+from src.features.prayer_config.adapter import PrayerConfigurationQueryAdapter
+from src.features.prayer_config.schemas import PrayerConfiguration
+from src.features.prayer_times.adapter import PrayerTimesTimingsParamsQueryAdapter
+from src.features.prayer_times.schemas import (
+    PrayerTimesCalendarParams,
+    PrayerTimesFilter,
+    PrayerTimesTimingsParams,
+)
+
+
+DateArg = Union[date, str, int]  # date object, "DD-MM-YYYY", or unix timestamp
+
+
+def _date_to_path(date_arg: DateArg) -> str:
+    if isinstance(date_arg, date):
+        return date_arg.strftime("%d-%m-%Y")
+    return str(date_arg)
+
+
+# ---- Client implementation ----
 
 
 class AlAdhanAPIClientProvider:
-    def __init__(self) -> None:
-        self.__client: Optional[aladhan.Client] = None
+    def __init__(
+        self,
+        base_url: str = "https://api.aladhan.com/v1",
+        timeout: float = 15.0,
+    ) -> None:
+        self.base_url = base_url.rstrip("/")
+        self._http = httpx.Client(timeout=timeout, base_url=self.base_url)
 
-    def get_client(self) -> aladhan.Client:
-        if self.__client is None:
-            self.__client = aladhan.Client()
-        return self.__client
+    def close(self) -> None:
+        self._http.close()
 
     def get_timings(
         self,
         *,
-        latitude: float,
-        longitude: float,
-        day: Union[dt_date, str, int],
-        params: Optional[aladhan.Parameters] = None,
-    ) -> aladhan.Timings:
+        params: PrayerTimesTimingsParams | None = None,
+        config: PrayerConfiguration | None = None,
+        mosque: MosqueBase | None = None,
+        filters: PrayerTimesFilter | None = None,
+    ) -> dict[str, Any]:
         """
-        Day timings by coordinates.
-        day: datetime.date OR 'DD-MM-YYYY' OR unix timestamp.
+        GET /timings/{date}
+        where {date} is 'DD-MM-YYYY' or unix timestamp.
         """
-        client = self.get_client()
-        date_arg = day.strftime("%d-%m-%Y") if isinstance(day, dt_date) else day
-        return client.get_timings(
-            latitude=latitude,
-            longitude=longitude,
-            date=aladhan.TimingsDateArg(date_arg),
-            params=params or aladhan.Parameters(),
+        data_infos = params if params else filters
+        date_path = (
+            f"{data_infos.day}-{data_infos.month}-{data_infos.year}"
+            if data_infos.year
+            else date.today().strftime("%d-%m-%Y")
         )
+
+        query_params: dict[str, Any] = (
+            PrayerConfigurationQueryAdapter.to_query(config)
+            | PrayerTimesTimingsParamsQueryAdapter.to_query(params)
+            | MosqueQueryAdapter.to_query(mosque)
+        )
+
+        r = self._http.get(f"/timings/{date_path}", params=query_params)
+        r.raise_for_status()
+        return r.json()
 
     def get_calendar(
         self,
         *,
-        latitude: float,
-        longitude: float,
-        year: int,
-        month: Optional[int] = None,
-        hijri: bool = False,
-        params: Optional[aladhan.Parameters] = None,
-    ) -> Any:
+        params: PrayerTimesCalendarParams,
+    ) -> dict[str, Any]:
         """
-        Calendar timings by coordinates.
-        - month provided -> month calendar
-        - month None -> full year calendar
+        GET /calendar/{year}/{month} or /hijriCalendar/{year}/{month}
         """
-        client = self.get_client()
-        date_arg = aladhan.CalendarDateArg(year=year, month=month or 1, hijri=hijri)
-        return client.get_calendar(
-            latitude=latitude,
-            longitude=longitude,
-            date=date_arg,
-            params=params or aladhan.Parameters(),
+        query_params: dict[str, Any] = PrayerTimesTimingsParamsQueryAdapter.to_query(
+            params
         )
+        endpoint = "/hijriCalendar" if params.hijri else "/calendar"
+        r = self._http.get(
+            f"{endpoint}/{params.year}{'/' + str(params.month) if params.month is not None else ''}",
+            params=query_params,
+        )
+        r.raise_for_status()
+        return r.json()

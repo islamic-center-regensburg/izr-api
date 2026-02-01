@@ -5,8 +5,8 @@ from src.features.prayer_times.operation import PrayerTimesOperation
 from src.features.prayer_times.enums import PrayerTimesSource
 from src.features.prayer_times.schemas import (
     PrayerTimesFilter,
-    PrayerTimesGenericParams,
     PrayerTimesSourceParams,
+    PrayerTimesTimingsParams,
 )
 
 
@@ -23,12 +23,9 @@ class PrayerTimesComponent:
 
     def get_prayer_times(
         self,
-        params: PrayerTimesGenericParams,
-        filters: PrayerTimesFilter,
+        params: PrayerTimesTimingsParams,
     ):
-        return self.__prayer_times_operation.fetch_prayer_times(
-            params=params, filters=filters
-        )
+        return self.__prayer_times_operation.fetch_prayer_times(params=params)
 
     def get_prayer_times_for_mosque(
         self,
@@ -47,7 +44,7 @@ class PrayerTimesComponent:
 
                 mosque = self.__mosque_operation.get_mosque_by_id(mosque_id)
                 return self.__prayer_times_operation.fetch_prayer_times_for_mosque(
-                    mosque, cfg.data[0], filters
+                    prayer_config=cfg.data[0], mosque=mosque, filters=filters
                 )
 
             case PrayerTimesSource.STORED:
