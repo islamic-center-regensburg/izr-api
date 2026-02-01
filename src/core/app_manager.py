@@ -69,7 +69,8 @@ class AppManager:
         )
         self.__mosque_operation = MosqueOperation(self.__database_repository_provider)
         self.__mosque_component = MosqueComponent(
-            mosque_operation=self.__mosque_operation
+            mosque_operation=self.__mosque_operation,
+            prayer_config_operation=self.__prayer_config_operation,
         )
         self.__mosque_controller = MosqueController(self.__mosque_component)
 
