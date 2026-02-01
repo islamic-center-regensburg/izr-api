@@ -1,26 +1,43 @@
 {
   "mosques": [
     {
-      "name": "Moschee Arrahman",
-      "address": "Al Noor Street 12",
-      "city": "Cairo",
-      "country": "Egypt",
-      "latitude": 30.0444,
-      "longitude": 31.2357,
-      "timezone": "Africa/Cairo"
-    },
-    {
-      "name": "Masjid Al-Falah",
-      "address": "Jl. Sudirman No. 45",
-      "city": "Jakarta",
-      "country": "Indonesia",
-      "latitude": -6.2088,
-      "longitude": 106.8456,
-      "timezone": "Asia/Jakarta"
+      "id": 1,
+      "name": "Islamisches Zentrum Regensburg",
+      "address": "Regensburg",
+      "city": "Regensburg",
+      "country": "Germany",
+      "latitude": 49.0134,
+      "longitude": 12.1016,
+      "timezone": "Europe/Berlin",
+      "prayer_config_id": 1
     }
   ],
   "prayer_configs": [
     {
+      "id": 1,
+      "mosque_id": 1,
+      "calculation_method": 3,
+      "school": 0,
+      "midnight_mode": 0,
+      "latitude_adjustment_method": 1,
+      "tune": false,
+      "imsak_tune": 0,
+      "fajr_tune": 0,
+      "sunrise_tune": 0,
+      "dhuhr_tune": 0,
+      "asr_tune": 0,
+      "maghrib_tune": 0,
+      "isha_tune": 0,
+      "midnight_tune": 0,
+      "fajr_angle": null,
+      "maghrib_angle": null,
+      "isha_angle": null,
+      "shafaq": "general",
+      "adjustment": 0,
+      "calendar_method": "HJCoSA"
+    },
+    {
+      "id": 2,
       "mosque_id": 1,
       "calculation_method": 99,
       "school": 0,
@@ -36,33 +53,11 @@
       "isha_tune": 0,
       "midnight_tune": 0,
       "fajr_angle": 12.0,
-      "maghrib_angle": null,
+      "maghrib_angle": 0.0,
       "isha_angle": 12.0,
       "shafaq": "general",
       "adjustment": 0,
       "calendar_method": "HJCoSA"
-    },
-    {
-      "mosque_id": 2,
-      "calculation_method": 99,
-      "school": 0,
-      "midnight_mode": 0,
-      "latitude_adjustment_method": 1,
-      "tune": true,
-      "imsak_tune": -5,
-      "fajr_tune": -2,
-      "sunrise_tune": 1,
-      "dhuhr_tune": 2,
-      "asr_tune": 1,
-      "maghrib_tune": 3,
-      "isha_tune": 2,
-      "midnight_tune": 0,
-      "fajr_angle": 18.0,
-      "maghrib_angle": 0.0,
-      "isha_angle": 17.0,
-      "shafaq": "general",
-      "adjustment": 1,
-      "calendar_method": "DIYANET"
     }
   ]
 }

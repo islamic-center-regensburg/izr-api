@@ -1,14 +1,39 @@
 from src.core.db.database_repository_provider import DatabaseRepositoryProvider
-from src.features.prayer_config.schemas import PrayerConfigurationIn
-from src.features.prayer_config.operation import PrayerConfigOperation
+from src.features.prayer_config.schemas import (
+    PrayerConfigurationOut,
+    PrayerConfigurationTable,
+)
 from src.core.logging.logger import logger
 
 
 def seed(
-    prayer_time_configurations: list[PrayerConfigurationIn],
+    prayer_time_configurations: list[PrayerConfigurationOut],
     db_repository_provider: DatabaseRepositoryProvider,
 ):
-    prayer_time_operator = PrayerConfigOperation(db_repository_provider)
-    for index, cfg in enumerate(prayer_time_configurations):
-        prayer_time_operator.add_prayer_configuration(index + 1, cfg)
+    with db_repository_provider.get_database_repository() as db:
+        for cfg in prayer_time_configurations:
+            db.create(
+                PrayerConfigurationTable(
+                    id=cfg.id,
+                    mosque_id=cfg.mosque_id,
+                    calculation_method=cfg.calculation_method,
+                    school=cfg.school,
+                    midnight_mode=cfg.midnight_mode,
+                    latitude_adjustment_method=cfg.latitude_adjustment_method,
+                    tune=cfg.tune,
+                    imsak_tune=cfg.imsak_tune,
+                    fajr_tune=cfg.fajr_tune,
+                    sunrise_tune=cfg.sunrise_tune,
+                    dhuhr_tune=cfg.dhuhr_tune,
+                    asr_tune=cfg.asr_tune,
+                    maghrib_tune=cfg.maghrib_tune,
+                    isha_tune=cfg.isha_tune,
+                    midnight_tune=cfg.midnight_tune,
+                    fajr_angle=cfg.fajr_angle,
+                    maghrib_angle=cfg.maghrib_angle,
+                    isha_angle=cfg.isha_angle,
+                    shafaq=cfg.shafaq,
+                    calendar_method=cfg.calendar_method,
+                )
+            )
     logger.info("--> Seeded Prayer Times Configurations")
