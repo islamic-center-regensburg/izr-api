@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
+from src.core.db.database_repository import DoesNotExistInDatabaseException
 from src.core.db.pagination import PaginatedResponse
 from src.features.prayer_config.component import PrayerConfigComponent
+from src.features.prayer_config.enums import CalculationMethod
 from src.features.prayer_config.schemas import (
     PrayerConfigurationFilter,
-    PrayerTimeConfigurationIn,
-    PrayerTimeConfigurationOut,
+    PrayerConfigurationIn,
+    PrayerConfigurationOut,
     PrayerTimeConfigurationUpdate,
 )
 from src.core.router.router_builder import EndpointType, RouterBuilder
@@ -21,14 +23,14 @@ class PrayerConfigController:
             "",
             endpoint_type=EndpointType.LIST,
             endpoint=self.__get_all_configs,
-            response_model=PaginatedResponse[PrayerTimeConfigurationOut],
+            response_model=PaginatedResponse[PrayerConfigurationOut],
             summary="List prayer configurations",
         )
         router_builder.add_method(
             "",
             endpoint_type=EndpointType.CREATE,
             endpoint=self.__add_prayer_configuration,
-            response_model=PrayerTimeConfigurationOut,
+            response_model=PrayerConfigurationOut,
             summary="Add prayer configuration",
         )
 
@@ -36,14 +38,22 @@ class PrayerConfigController:
             "/{prayer_config_id}",
             endpoint_type=EndpointType.UPDATE,
             endpoint=self.__update_prayer_configuration,
-            response_model=PrayerTimeConfigurationOut,
+            response_model=PrayerConfigurationOut,
             summary="Update prayer configuration",
+        )
+
+        router_builder.add_method(
+            "/calculation_methods",
+            endpoint_type=EndpointType.GET,
+            endpoint=self.__get_calculation_methods,
+            response_model=dict[int, str],
+            summary="Calculation Methods",
         )
         return router_builder.get_router()
 
     def __get_all_configs(
         self, filter: PrayerConfigurationFilter = Depends()
-    ) -> PaginatedResponse[PrayerTimeConfigurationOut]:
+    ) -> PaginatedResponse[PrayerConfigurationOut]:
         try:
             return self.__prayer_config_component.get_all_prayer_configurations(filter)
         except Exception as e:
@@ -51,23 +61,34 @@ class PrayerConfigController:
             raise HTTPException(status_code=500, detail="Internal server error") from e
 
     def __add_prayer_configuration(
-        self, mosque_id: str, config_data: PrayerTimeConfigurationIn
-    ) -> PrayerTimeConfigurationOut:
+        self, mosque_id: int, config_data: PrayerConfigurationIn
+    ) -> PrayerConfigurationOut:
         try:
             return self.__prayer_config_component.add_prayer_configuration(
                 mosque_id, config_data
+            )
+        except DoesNotExistInDatabaseException:
+            raise HTTPException(
+                status_code=404, detail="Prayer configuration or Mosque not found"
             )
         except Exception as e:
             logger.error("Internal server error", exc_info=True)
             raise HTTPException(status_code=500, detail="Internal server error") from e
 
     def __update_prayer_configuration(
-        self, prayer_config_id: str, config_data: PrayerTimeConfigurationUpdate
-    ) -> PrayerTimeConfigurationOut:
+        self, prayer_config_id: int, config_data: PrayerTimeConfigurationUpdate
+    ) -> PrayerConfigurationOut:
         try:
             return self.__prayer_config_component.update_prayer_configuration(
                 prayer_config_id, config_data
             )
+        except DoesNotExistInDatabaseException:
+            raise HTTPException(
+                status_code=404, detail="Prayer configuration not found"
+            )
         except Exception as e:
             logger.error("Internal server error", exc_info=True)
             raise HTTPException(status_code=500, detail="Internal server error") from e
+
+    def __get_calculation_methods(self) -> dict[int, str]:
+        return CalculationMethod.labels()

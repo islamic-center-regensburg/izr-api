@@ -12,6 +12,9 @@ class MosqueBase(SQLModel):
     latitude: float = Field(description="Latitude of the mosque location")
     longitude: float = Field(description="Longitude of the mosque location")
     timezone: str = Field(default="UTC", description="Timezone of the mosque location")
+    prayer_config_id: Optional[int] = Field(
+        default=None, description="Active prayer configuration ID for the mosque"
+    )
 
 
 class MosqueTable(MosqueBase, table=True):
@@ -27,6 +30,13 @@ class MosqueOut(MosqueBase):
     id: int
 
 
+class Mosque(MosqueBase):
+    id: int
+
+
+Mosque
+
+
 class MosqueUpdate(SQLModel):
     name: Optional[str] = None
     address: Optional[str] = None
@@ -35,6 +45,7 @@ class MosqueUpdate(SQLModel):
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     timezone: Optional[str] = None
+    prayer_config_id: Optional[int] = None
 
 
 class MosqueFilter(PageParams):

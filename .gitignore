@@ -136,7 +136,7 @@ celerybeat.pid
 
 # Environments
 .env
-docker.env
+.docker.env
 .envrc
 .venv
 env/

@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
-from core.db.pagination import PaginatedResponse
+from src.core.db.database_repository import DoesNotExistInDatabaseException
+from src.core.db.pagination import PaginatedResponse
 from src.features.mosque.component import MosqueComponent
-from src.features.mosque.schemas import MosqueIn, MosqueFilter, MosqueOut
+from src.features.mosque.schemas import MosqueIn, MosqueFilter, MosqueOut, MosqueUpdate
 from src.core.router.router_builder import EndpointType, RouterBuilder
 from src.core.logging.logger import logger
 
@@ -27,6 +28,13 @@ class MosqueController:
             response_model=MosqueOut,
             summary="Get mosque by ID",
         )
+        router_builder.add_method(
+            "/{mosque_id}",
+            endpoint_type=EndpointType.UPDATE,
+            endpoint=self.__update_mosque,
+            response_model=MosqueOut,
+            summary="Update mosque by ID",
+        )
 
         router_builder.add_method(
             "",
@@ -49,11 +57,9 @@ class MosqueController:
     def __get_by_id(self, mosque_id: int) -> MosqueOut:
         try:
             mosque = self.__mosque_component.get_mosque_by_id(mosque_id)
-            if mosque is None:
-                raise HTTPException(status_code=404, detail="Mosque not found")
             return mosque
-        except HTTPException:
-            raise
+        except DoesNotExistInDatabaseException:
+            raise HTTPException(status_code=404, detail="Mosque not found")
         except Exception as e:
             logger.error("Internal server error", exc_info=True)
             raise HTTPException(status_code=500, detail="Internal server error") from e
@@ -61,6 +67,20 @@ class MosqueController:
     def __add_mosque(self, mosque_data: MosqueIn) -> MosqueOut:
         try:
             return self.__mosque_component.add_mosque(mosque_data)
+        except Exception as e:
+            logger.error("Internal server error", exc_info=True)
+            raise HTTPException(status_code=500, detail="Internal server error") from e
+
+    def __update_mosque(self, mosque_id: int, mosque_data: MosqueUpdate) -> MosqueOut:
+        try:
+            updated_mosque = self.__mosque_component.update_mosque(
+                mosque_id, mosque_data
+            )
+            return updated_mosque
+        except DoesNotExistInDatabaseException:
+            raise HTTPException(
+                status_code=404, detail="Mosque or Prayer Configuration not found"
+            )
         except Exception as e:
             logger.error("Internal server error", exc_info=True)
             raise HTTPException(status_code=500, detail="Internal server error") from e

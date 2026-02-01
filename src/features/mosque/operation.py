@@ -1,4 +1,4 @@
-from core.db.pagination import PaginationBuilder
+from src.core.db.pagination import PaginationBuilder
 from src.core.db.filters import Filter, Operator
 from src.core.db.database_repository_provider import DatabaseRepositoryProvider
 from src.features.mosque.schemas import MosqueFilter, MosqueTable
@@ -44,3 +44,15 @@ class MosqueOperation:
             )
             mosque = db.create(mosque_record)
             return mosque
+
+    def update_mosque(self, mosque_id: int, mosque_data):
+        with self.db_repository.get_database_repository() as db:
+            mosque = db.get_by_id(MosqueTable, mosque_id)
+            if mosque is None:
+                return None
+
+            for key, value in mosque_data.dict(exclude_unset=True).items():
+                setattr(mosque, key, value)
+
+            updated_mosque = db.update(mosque)
+            return updated_mosque

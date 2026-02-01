@@ -1,8 +1,8 @@
-from core.db.pagination import PaginationBuilder
+from src.core.db.pagination import PaginationBuilder
 from src.features.prayer_config.exceptions import PrayerConfigNotFoundException
 from src.features.prayer_config.schemas import (
     PrayerConfigurationFilter,
-    PrayerTimeConfigurationIn,
+    PrayerConfigurationIn,
     PrayerTimeConfigurationUpdate,
 )
 from src.core.db.database_repository_provider import DatabaseRepositoryProvider
@@ -16,7 +16,8 @@ class PrayerConfigOperation:
 
     def get_all_prayer_configurations(self, filter: PrayerConfigurationFilter):
         filters = [
-            Filter(attribute="mosque_id", operator=Operator.EQ, value=filter.mosque_id)
+            Filter(attribute="mosque_id", operator=Operator.EQ, value=filter.mosque_id),
+            Filter(attribute="id", operator=Operator.EQ, value=filter.id),
         ]
         with self.db_repository.get_database_repository() as db:
             configs = db.get_all(PrayerConfigurationTable, filters=filters)
@@ -28,8 +29,13 @@ class PrayerConfigOperation:
                 size=filter.size,
             )
 
+    def get_by_id(self, prayer_config_id: int):
+        with self.db_repository.get_database_repository() as db:
+            config = db.get_by_id(PrayerConfigurationTable, prayer_config_id)
+            return config
+
     def add_prayer_configuration(
-        self, mosque_id: str, config_data: PrayerTimeConfigurationIn
+        self, mosque_id: str, config_data: PrayerConfigurationIn
     ):
         with self.db_repository.get_database_repository() as db:
             prayer_config = PrayerConfigurationTable(

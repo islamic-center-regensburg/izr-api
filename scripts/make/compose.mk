@@ -3,7 +3,7 @@
 # --------------------------------------
 
 COMPOSE_FILE := $(ROOT_DIR)/docker-compose.yaml
-ENV_FILE     := $(ROOT_DIR)/docker.env
+ENV_FILE     := $(ROOT_DIR)/.docker.env
 DC           := docker compose
 
 # --------------------------------------
