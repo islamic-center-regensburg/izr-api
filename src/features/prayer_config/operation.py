@@ -29,6 +29,11 @@ class PrayerConfigOperation:
                 size=filter.size,
             )
 
+    def get_by_id(self, prayer_config_id: int):
+        with self.db_repository.get_database_repository() as db:
+            config = db.get_by_id(PrayerConfigurationTable, prayer_config_id)
+            return config
+
     def add_prayer_configuration(
         self, mosque_id: str, config_data: PrayerConfigurationIn
     ):
