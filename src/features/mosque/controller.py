@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from core.db.pagination import PaginatedResponse
+from src.core.db.pagination import PaginatedResponse
 from src.features.mosque.component import MosqueComponent
 from src.features.mosque.schemas import MosqueIn, MosqueFilter, MosqueOut
 from src.core.router.router_builder import EndpointType, RouterBuilder

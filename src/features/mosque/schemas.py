@@ -27,6 +27,13 @@ class MosqueOut(MosqueBase):
     id: int
 
 
+class Mosque(MosqueBase):
+    id: int
+
+
+Mosque
+
+
 class MosqueUpdate(SQLModel):
     name: Optional[str] = None
     address: Optional[str] = None

@@ -1,4 +1,4 @@
-from core.db.pagination import PaginationBuilder
+from src.core.db.pagination import PaginationBuilder
 from src.core.db.filters import Filter, Operator
 from src.core.db.database_repository_provider import DatabaseRepositoryProvider
 from src.features.mosque.schemas import MosqueFilter, MosqueTable
