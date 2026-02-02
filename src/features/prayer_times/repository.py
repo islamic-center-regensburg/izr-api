@@ -36,7 +36,7 @@ class AlAdhanAPIClientProvider:
         timeout: float = 15.0,
     ) -> None:
         self.base_url = base_url.rstrip("/")
-        self._http = httpx.Client(timeout=timeout, base_url=self.base_url)
+        self._http = httpx.Client(timeout=timeout, base_url=self.base_url, verify=False)
 
     def close(self) -> None:
         self._http.close()

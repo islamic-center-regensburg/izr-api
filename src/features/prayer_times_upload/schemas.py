@@ -1,27 +1,46 @@
-from datetime import datetime
+from datetime import datetime, timezone
+from fastapi import File, Form, UploadFile
+from pydantic import BaseModel
 from sqlmodel import SQLModel, Field
 from typing import Optional
 
+from src.features.prayer_times_upload.enums import FileTypeEnum
 
-class PrayerTimeUploadTable(SQLModel, table=True):
-    __tablename__ = "prayer_time_uploads"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+class PrayerTimeUploadIn(BaseModel):
+    mosque_id: int = Form(...)
+    year: int = Form(...)
+    file: UploadFile = File(...)
+    file_type: FileTypeEnum = Form(...)
+
+
+class PrayerTimeUploadBase(SQLModel):
     mosque_id: int = Field(foreign_key="mosques.id", index=True)
-
-    original_filename: str = Field(
-        ..., description="Original name of the uploaded file"
-    )
+    year: int = Field(..., description="Year for which the prayer times are uploaded")
     stored_filename: str = Field(..., description="Stored name of the uploaded file")
-    content_type: Optional[str] = Field(
+    file_type: Optional[FileTypeEnum] = Field(
         None, description="Content type of the uploaded file"
     )
-    year: int = Field(..., description="Year for which the prayer times are uploaded")
+
+
+class PrayerTimeUploadCreate(PrayerTimeUploadBase):
+    pass
+
+
+class PrayerTimeUploadTable(PrayerTimeUploadCreate, table=True):
+    __tablename__ = "prayer_time_uploads"
+
+    id: int = Field(..., primary_key=True)
 
     uploaded_at: datetime = Field(
-        default_factory=lambda: datetime.now(datetime.timezone.utc), index=True
+        default_factory=lambda: datetime.now(timezone.utc), index=True
     )
 
-    rows_inserted: int = 0
-    status: str = "success"
-    error: Optional[str] = None
+
+class PrayerTimeUploadOut(PrayerTimeUploadTable):
+    pass
+
+
+class PrayerTimeUploadFilter(SQLModel):
+    mosque_id: int | None = None
+    year: int | None = None

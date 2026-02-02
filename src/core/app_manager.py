@@ -26,6 +26,9 @@ from src.core.db.database_settings import DatabaseSettings
 from src.features.prayer_times.component import PrayerTimesComponent
 from src.features.prayer_times.controller import PrayerTimesController
 from src.features.prayer_times.operation import PrayerTimesOperation
+from src.features.prayer_times_upload.component import PrayerTimesUploadComponent
+from src.features.prayer_times_upload.controller import PrayerTimesUploadController
+from src.features.prayer_times_upload.operation import PrayerTimesUploadOperation
 
 
 class AppManagerSettings(BaseSettings):
@@ -96,6 +99,19 @@ class AppManager:
             self.__prayer_times_component
         )
 
+        self.__prayer_times_upload_operation = PrayerTimesUploadOperation(
+            db_repository_provider=self.__database_repository_provider,
+        )
+        self.__prayer_times_upload_component = PrayerTimesUploadComponent(
+            prayer_times_upload_operation=self.__prayer_times_upload_operation,
+            prayer_times_operation=self.__prayer_times_operation,
+            mosque_operation=self.__mosque_operation,
+        )
+
+        self.__prayer_times_upload_controller = PrayerTimesUploadController(
+            self.__prayer_times_upload_component
+        )
+
     @contextlib.asynccontextmanager
     async def __lifespan(self, app: FastAPI):
         self.__init_logger()
@@ -135,6 +151,7 @@ class AppManager:
             self.__mosque_controller,
             self.__prayer_config_controller,
             self.__prayer_times_controller,
+            self.__prayer_times_upload_controller,
         ]:
             self.__app.include_router(controller.get_router())
 
