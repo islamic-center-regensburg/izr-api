@@ -21,12 +21,13 @@ services:
     depends_on:
     - minio
     environment:
-    - MINIO_DEFAULT_BUCKETS=${MINIO_DEFAULT_BUCKETS}
+    - MINIO_DEFAULT_BUCKET=${MINIO_DEFAULT_BUCKET}
     entrypoint: >
       /bin/sh -c "
       sleep 5;
       /usr/bin/mc alias set izr-minio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
-      /usr/bin/mc mb izr-minio/${MINIO_DEFAULT_BUCKETS} || true;
+      /usr/bin/mc mb izr-minio/${MINIO_DEFAULT_BUCKET}/${DB_BACKUPS_DIRECTORY} || true;
+      /usr/bin/mc mb izr-minio/${MINIO_DEFAULT_BUCKET}/${PRAYER_TIMES_DIRECTORY} || true;
       exit 0;
       "
     networks:
