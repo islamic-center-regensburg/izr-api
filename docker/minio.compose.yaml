@@ -1,0 +1,37 @@
+---
+services:
+  minio:
+    image: minio/minio
+    container_name: minio
+    environment:
+    - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+    - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+
+    command: server /data --console-address ":9001"
+    networks:
+    - izr-api-net
+    volumes:
+    - minio_data:/data
+    ports:
+    - 9000:9000
+    - 9001:9001
+
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+    - minio
+    environment:
+    - MINIO_DEFAULT_BUCKETS=${MINIO_DEFAULT_BUCKETS}
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      /usr/bin/mc alias set izr-minio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
+      /usr/bin/mc mb izr-minio/${MINIO_DEFAULT_BUCKETS} || true;
+      exit 0;
+      "
+    networks:
+    - izr-api-net
+
+volumes:
+  minio_data:
+    driver: local

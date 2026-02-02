@@ -2,6 +2,7 @@
 include:
 - docker/api.compose.yaml
 - docker/db.compose.yaml
+- docker/minio.compose.yaml
 
 networks:
   izr-api-net:
