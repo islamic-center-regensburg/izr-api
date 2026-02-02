@@ -22,6 +22,13 @@ class MinioSettings(BaseSettings):
         ..., alias="MINIO_DEFAULT_BUCKET", description="Default bucket name"
     )
 
+    prayer_times_directory: str = Field(
+        default="prayer-times", alias="PRAYER_TIMES_DIRECTORY"
+    )
+    db_backups_directory: str = Field(
+        default="db-backups", alias="DB_BACKUPS_DIRECTORY"
+    )
+
 
 # Convenience singleton-ish getter (optional)
 _settings: MinioSettings | None = None
