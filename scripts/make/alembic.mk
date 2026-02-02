@@ -47,7 +47,3 @@ db-heads:
 # Stamp DB with head (no migration run)
 db-stamp:
 	$(ALEMBIC) -c $(ALEMBIC_CFG) stamp head
-
-db-reset:
-	$(ALEMBIC) -c $(ALEMBIC_CFG) downgrade base
-	$(ALEMBIC) -c $(ALEMBIC_CFG) upgrade head
