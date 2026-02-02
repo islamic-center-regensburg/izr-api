@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from datetime import date, datetime
 from typing import Any, Dict, List
 
 from pydantic import BaseModel
@@ -55,15 +54,6 @@ class AlAdhanTimings(BaseModel):
 
 class AlAdhanGregorian(BaseModel):
     date: str  # "01-01-2026"
-
-    @field_validator("date", mode="before")
-    @classmethod
-    def validate_format(cls, v: str) -> str:
-        datetime.strptime(v, "%d-%m-%Y")
-        return v
-
-    def as_date(self) -> date:
-        return datetime.strptime(self.date, "%d-%m-%Y").date()
 
 
 class AlAdhanHijri(BaseModel):
@@ -130,6 +120,6 @@ class AlAdhanPrayerTimesAdapter:
             asr=item.timings.Asr,
             maghrib=item.timings.Maghrib,
             isha=item.timings.Isha,
-            gregorian_date=item.date.gregorian.as_date(),  # actual datetime.date
+            gregorian_date=item.date.gregorian.date,
             hijri_date=item.date.hijri.date,
         )

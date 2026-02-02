@@ -1,13 +1,18 @@
-from datetime import date
-from pydantic import model_validator
-from sqlmodel import SQLModel, Field
+from __future__ import annotations
+
 from typing import Optional
 
+from pydantic import field_validator, model_validator
+from sqlmodel import SQLModel, Field
+
 from src.core.logging.logger import logger
-from src.features.prayer_config.enums import (
-    CalculationMethod,
-)
+from src.features.prayer_config.enums import CalculationMethod
 from src.features.prayer_times.enums import PrayerTimesSource
+from src.features.prayer_times.helpers import (
+    normalize_hijri_date,
+    normalize_time_str,
+    validate_prayer_times_order,
+)
 
 
 class PrayerTimesBase(SQLModel):
@@ -18,8 +23,32 @@ class PrayerTimesBase(SQLModel):
     maghrib: str = Field(..., description="Time for Maghrib prayer")
     isha: str = Field(..., description="Time for Isha prayer")
 
-    gregorian_date: date = Field(..., description="Gregorian date for this row")
+    gregorian_date: str = Field(..., description="Gregorian date for this row")
     hijri_date: str = Field(..., description="Hijri date for this row")
+
+    @field_validator("fajr", "shuruq", "dhuhr", "asr", "maghrib", "isha", mode="before")
+    @classmethod
+    def validate_and_normalize_times(cls, v: object) -> str:
+        return normalize_time_str(v, keep_seconds=False)
+
+    @field_validator("hijri_date", mode="before")
+    @classmethod
+    def validate_hijri_date(cls, v: object) -> str:
+        return normalize_hijri_date(v)
+
+    @model_validator(mode="after")
+    def validate_time_order(self) -> "PrayerTimesBase":
+        validate_prayer_times_order(
+            {
+                "fajr": self.fajr,
+                "shuruq": self.shuruq,
+                "dhuhr": self.dhuhr,
+                "asr": self.asr,
+                "maghrib": self.maghrib,
+                "isha": self.isha,
+            }
+        )
+        return self
 
 
 class PrayerTimesTable(PrayerTimesBase, table=True):
@@ -31,6 +60,14 @@ class PrayerTimesTable(PrayerTimesBase, table=True):
     upload_id: Optional[int] = Field(
         default=None, foreign_key="prayer_time_uploads.id", index=True
     )
+
+    year: int = Field(..., description="Year of the prayer times")
+    month: int = Field(..., description="Month of the prayer times")
+    day: int = Field(..., description="Day of the prayer times")
+
+
+class PrayerTimesIn(PrayerTimesBase):
+    pass
 
 
 class PrayerTimesOut(PrayerTimesBase):
@@ -61,7 +98,6 @@ class PrayerTimesFilter(SQLModel):
             raise ValueError("Invalid filter: 'month' requires 'year'.")
         if self.day is not None and (self.year is None or self.month is None):
             raise ValueError("Invalid filter: 'day' requires both 'year' and 'month'.")
-
         return self
 
 
