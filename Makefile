@@ -36,5 +36,6 @@ help:
 	@echo "    make db-history        Show migration history"
 	@echo "    make db-heads          Show migration heads"
 	@echo "    make db-stamp          Stamp DB with head"
+	@echo "    make db-reset          Reset and clear DB"
 	@echo "    make seed              Seed the database with initial data"
 	@echo ""
