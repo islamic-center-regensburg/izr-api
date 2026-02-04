@@ -21,6 +21,7 @@ from src.core.db.database_settings import DatabaseSettings
 from src.features.mosque.router import get_router as mosque_router
 from src.features.prayer_config.router import get_router as prayer_config_router
 from src.features.prayer_times.router import get_router as prayer_times_router
+from src.features.prayer_iqama.router import get_router as prayer_iqama_router
 from src.features.prayer_times_upload.router import (
     get_router as prayer_times_upload_router,
 )
@@ -102,6 +103,7 @@ class AppManager:
             prayer_config_router(self.__database_repository_provider),
             prayer_times_router(self.__database_repository_provider),
             prayer_times_upload_router(self.__database_repository_provider),
+            prayer_iqama_router(self.__database_repository_provider),
         ]:
             self.__app.include_router(router)
 
