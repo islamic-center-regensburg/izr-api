@@ -72,8 +72,6 @@ class MediaOperation:
     def delete(self, media_id: int):
         with self.__db_repository_provider.get_database_repository() as db:
             media = db.get_by_id(MediaTable, media_id)
-            if media is None:
-                return None
             object_key = media.object_key
             db.delete(MediaTable, media_id)
             return object_key

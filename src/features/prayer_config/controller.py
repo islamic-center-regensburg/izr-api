@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException
-from src.core.db.database_repository import DoesNotExistInDatabaseException
 from src.core.db.pagination import PaginatedResponse
 from src.features.prayer_config.component import PrayerConfigComponent
 from src.features.prayer_config.enums import CalculationMethod
@@ -67,10 +66,6 @@ class PrayerConfigController:
             return self.__prayer_config_component.add_prayer_configuration(
                 mosque_id, config_data
             )
-        except DoesNotExistInDatabaseException:
-            raise HTTPException(
-                status_code=404, detail="Prayer configuration or Mosque not found"
-            )
         except Exception as e:
             logger.error("Internal server error", exc_info=True)
             raise HTTPException(status_code=500, detail="Internal server error") from e
@@ -81,10 +76,6 @@ class PrayerConfigController:
         try:
             return self.__prayer_config_component.update_prayer_configuration(
                 prayer_config_id, config_data
-            )
-        except DoesNotExistInDatabaseException:
-            raise HTTPException(
-                status_code=404, detail="Prayer configuration not found"
             )
         except Exception as e:
             logger.error("Internal server error", exc_info=True)
