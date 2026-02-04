@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
 from src.core.router.router_builder import EndpointType, RouterBuilder
 from src.features.prayer_times_upload.component import PrayerTimesUploadComponent
-from src.features.prayer_times_upload.dependencies import (
-    get_minio_repository,
-    get_prayer_times_parser_repository,
-)
+
 from src.features.prayer_times_upload.schemas import (
     PrayerTimeUploadIn,
     PrayerTimeUploadOut,
+)
+from src.features.prayer_times_upload.storage import (
+    get_prayer_times_parser_repository,
+    get_minio_repository,
 )
 from src.integrations.minio.repository import MinioStorageProvider
 from src.integrations.prayer_times_parser.repository import PrayerTimesParserProvider
