@@ -32,6 +32,8 @@ class MinioStorageProvider:
                 return self._settings.prayer_times_directory
             case DirectoryEnum.DB_BACKUPS:
                 return self._settings.db_backups_directory
+            case DirectoryEnum.MEDIA:
+                return self._settings.media_directory
             case _:
                 raise ValueError(f"Unsupported directory enum: {self._directory!r}")
 
@@ -100,12 +102,32 @@ class MinioStorageProvider:
             content_type=content_type,
         )
 
-    def presigned_get_url(self, *, filename: str, expires: int = 3600) -> str:
+    def presigned_get_url(
+        self,
+        *,
+        filename: str,
+        expires: int = 3600,
+        content_type: str | None = None,
+        inline: bool = True,
+    ) -> str:
+        response_headers: dict[str, str] = {}
+
+        # Force preview in browser (when the browser supports the type)
+        if inline:
+            response_headers["response-content-disposition"] = "inline"
+            # If you want to preserve the filename in the Save dialog, you can do:
+            # response_headers["response-content-disposition"] = f'inline; filename="{filename}"'
+
+        # Set the correct mime type (image/png, video/mp4, etc.)
+        if content_type:
+            response_headers["response-content-type"] = content_type
+
         return self._client.presigned_get_object(
             bucket_name=self.bucket,
             object_name=self._object_key(filename),
             expires=timedelta(seconds=expires),
+            response_headers=response_headers or None,
         )
 
-    def delete(self, *, filename: str) -> None:
+    def delete(self, filename: str) -> None:
         self._client.remove_object(self.bucket, self._object_key(filename))

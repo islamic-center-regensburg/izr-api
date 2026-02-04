@@ -4,7 +4,6 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class MinioSettings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_prefix="MINIO_",
         case_sensitive=False,
         extra="ignore",
     )
@@ -28,6 +27,8 @@ class MinioSettings(BaseSettings):
     db_backups_directory: str = Field(
         default="db-backups", alias="DB_BACKUPS_DIRECTORY"
     )
+
+    media_directory: str = Field(default="media", alias="MEDIA_DIRECTORY")
 
 
 # Convenience singleton-ish getter (optional)
