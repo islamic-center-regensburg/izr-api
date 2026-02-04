@@ -6,13 +6,7 @@ from src.core.exceptions import (
     core_validation_exception_handler,
     request_validation_exception_handler,
 )
-from src.features.mosque.component import MosqueComponent
-from src.features.prayer_config.component import PrayerConfigComponent
-from src.features.mosque.controller import MosqueController
-from src.features.prayer_config.controller import PrayerConfigController
 
-from src.features.mosque.operation import MosqueOperation
-from src.features.prayer_config.operation import PrayerConfigOperation
 from src.core.logging.logger import logger
 
 from fastapi import FastAPI
@@ -23,12 +17,13 @@ from pydantic_settings import BaseSettings
 from src.core.db.database_connection import DatabaseConnection
 from src.core.db.database_repository_provider import DatabaseRepositoryProvider
 from src.core.db.database_settings import DatabaseSettings
-from src.features.prayer_times.component import PrayerTimesComponent
-from src.features.prayer_times.controller import PrayerTimesController
-from src.features.prayer_times.operation import PrayerTimesOperation
-from src.features.prayer_times_upload.component import PrayerTimesUploadComponent
-from src.features.prayer_times_upload.controller import PrayerTimesUploadController
-from src.features.prayer_times_upload.operation import PrayerTimesUploadOperation
+
+from src.features.mosque.router import get_router as mosque_router
+from src.features.prayer_config.router import get_router as prayer_config_router
+from src.features.prayer_times.router import get_router as prayer_times_router
+from src.features.prayer_times_upload.router import (
+    get_router as prayer_times_upload_router,
+)
 
 
 class AppManagerSettings(BaseSettings):
@@ -67,51 +62,6 @@ class AppManager:
 
         self.__database_repository_provider = DatabaseRepositoryProvider(db_connection)
 
-        self.__prayer_config_operation = PrayerConfigOperation(
-            self.__database_repository_provider
-        )
-        self.__mosque_operation = MosqueOperation(self.__database_repository_provider)
-        self.__mosque_component = MosqueComponent(
-            mosque_operation=self.__mosque_operation,
-            prayer_config_operation=self.__prayer_config_operation,
-        )
-        self.__mosque_controller = MosqueController(self.__mosque_component)
-
-        self.__prayer_config_component = PrayerConfigComponent(
-            prayer_config_operation=self.__prayer_config_operation,
-            mosque_operation=self.__mosque_operation,
-        )
-        self.__prayer_config_controller = PrayerConfigController(
-            self.__prayer_config_component
-        )
-
-        self.__prayer_times_operation = PrayerTimesOperation(
-            self.__database_repository_provider
-        )
-
-        self.__prayer_times_component = PrayerTimesComponent(
-            prayer_times_operation=self.__prayer_times_operation,
-            mosque_operation=self.__mosque_operation,
-            prayer_config_operation=self.__prayer_config_operation,
-        )
-
-        self.__prayer_times_controller = PrayerTimesController(
-            self.__prayer_times_component
-        )
-
-        self.__prayer_times_upload_operation = PrayerTimesUploadOperation(
-            db_repository_provider=self.__database_repository_provider,
-        )
-        self.__prayer_times_upload_component = PrayerTimesUploadComponent(
-            prayer_times_upload_operation=self.__prayer_times_upload_operation,
-            prayer_times_operation=self.__prayer_times_operation,
-            mosque_operation=self.__mosque_operation,
-        )
-
-        self.__prayer_times_upload_controller = PrayerTimesUploadController(
-            self.__prayer_times_upload_component
-        )
-
     @contextlib.asynccontextmanager
     async def __lifespan(self, app: FastAPI):
         self.__init_logger()
@@ -147,13 +97,13 @@ class AppManager:
         logger.addHandler(handler)
 
     def __add_routers(self):
-        for controller in [
-            self.__mosque_controller,
-            self.__prayer_config_controller,
-            self.__prayer_times_controller,
-            self.__prayer_times_upload_controller,
+        for router in [
+            mosque_router(self.__database_repository_provider),
+            prayer_config_router(self.__database_repository_provider),
+            prayer_times_router(self.__database_repository_provider),
+            prayer_times_upload_router(self.__database_repository_provider),
         ]:
-            self.__app.include_router(controller.get_router())
+            self.__app.include_router(router)
 
     # def __add_middlewares(self):
     #     logger.info(f"Allowed origins: {self.__cors_settings.frontend_url}")
