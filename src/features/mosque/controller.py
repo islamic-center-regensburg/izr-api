@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException
-from src.core.db.database_repository import DoesNotExistInDatabaseException
 from src.core.db.pagination import PaginatedResponse
 from src.features.mosque.component import MosqueComponent
 from src.features.mosque.schemas import MosqueIn, MosqueFilter, MosqueOut, MosqueUpdate
@@ -58,8 +57,6 @@ class MosqueController:
         try:
             mosque = self.__mosque_component.get_mosque_by_id(mosque_id)
             return mosque
-        except DoesNotExistInDatabaseException:
-            raise HTTPException(status_code=404, detail="Mosque not found")
         except Exception as e:
             logger.error("Internal server error", exc_info=True)
             raise HTTPException(status_code=500, detail="Internal server error") from e
@@ -77,10 +74,6 @@ class MosqueController:
                 mosque_id, mosque_data
             )
             return updated_mosque
-        except DoesNotExistInDatabaseException:
-            raise HTTPException(
-                status_code=404, detail="Mosque or Prayer Configuration not found"
-            )
         except Exception as e:
             logger.error("Internal server error", exc_info=True)
             raise HTTPException(status_code=500, detail="Internal server error") from e

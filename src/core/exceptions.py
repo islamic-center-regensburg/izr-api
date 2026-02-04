@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from functools import wraps
-from typing import Callable, ParamSpec, TypeVar
+import inspect
+from typing import ParamSpec, TypeVar
 
 from fastapi import HTTPException, Request
 from fastapi.encoders import jsonable_encoder
@@ -13,6 +14,10 @@ from src.core.logging.logger import logger
 
 P = ParamSpec("P")
 R = TypeVar("R")
+
+
+class DoesNotExistInDatabaseException(Exception):
+    pass
 
 
 async def request_validation_exception_handler(
@@ -35,28 +40,32 @@ async def core_validation_exception_handler(
     )
 
 
-def guard(fn: Callable[P, R]) -> Callable[P, R]:
+def guard(fn):
+    if inspect.iscoroutinefunction(fn):
+
+        @wraps(fn)
+        async def _w(*args, **kwargs):
+            try:
+                return await fn(*args, **kwargs)
+            except DoesNotExistInDatabaseException as e:
+                raise HTTPException(status_code=404, detail=str(e))
+            except Exception as e:
+                logger.error(f"Unhandled exception: {e}")
+                raise HTTPException(status_code=500, detail="Internal Server Error")
+            ...
+
+        return _w
+
     @wraps(fn)
-    def _w(*args: P.args, **kwargs: P.kwargs) -> R:
+    def _w(*args, **kwargs):
         try:
             return fn(*args, **kwargs)
-
-        # let already-well-formed HTTP errors pass
-        except HTTPException:
-            raise
-
-        # hardcoded exceptions you expect
-        except ValueError as e:
-            logger.error("Internal server error", e)
-            raise HTTPException(status_code=400, detail=str(e))
-
-        # add more here as you wish
-        # except IntegrityError:
-        #     raise HTTPException(status_code=409, detail="Conflict")
-
-        # fallback
+        except DoesNotExistInDatabaseException as e:
+            raise HTTPException(status_code=404, detail=str(e))
         except Exception as e:
-            logger.error("Internal server error", e)
-            raise HTTPException(status_code=500, detail="Internal server error")
+            logger.error(f"Unhandled exception: {e}")
+            raise HTTPException(status_code=500, detail="Internal Server Error")
+
+        ...
 
     return _w
