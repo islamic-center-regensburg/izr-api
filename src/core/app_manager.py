@@ -26,6 +26,7 @@ from src.features.prayer_times_upload.router import (
     get_router as prayer_times_upload_router,
 )
 from src.features.media.router import get_router as media_router
+from src.features.event.router import get_router as event_router
 
 
 class AppManagerSettings(BaseSettings):
@@ -106,6 +107,7 @@ class AppManager:
             prayer_times_upload_router(self.__database_repository_provider),
             prayer_iqama_router(self.__database_repository_provider),
             media_router(self.__database_repository_provider),
+            event_router(self.__database_repository_provider),
         ]:
             self.__app.include_router(router)
 
