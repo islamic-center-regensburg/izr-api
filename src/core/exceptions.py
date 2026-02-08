@@ -10,14 +10,13 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic_core import ValidationError as CoreValidationError
 
+from src.core.db.database_repository import DoesNotExistInDatabaseException
 from src.core.logging.logger import logger
+from src.features.event.exception import EventTranslationAlreadyExists
+from src.features.media.exception import DeleteMediaException, GetMediaException
 
 P = ParamSpec("P")
 R = TypeVar("R")
-
-
-class DoesNotExistInDatabaseException(Exception):
-    pass
 
 
 async def request_validation_exception_handler(
@@ -40,6 +39,14 @@ async def core_validation_exception_handler(
     )
 
 
+EXCEPTION_MAPPINGS = [
+    (DoesNotExistInDatabaseException, 404, "warning", "Database error"),
+    (GetMediaException, 400, "warning", "Media error"),
+    (DeleteMediaException, 400, "warning", "Media error"),
+    (EventTranslationAlreadyExists, 400, "error", "Event translation error"),
+]
+
+
 def guard(fn):
     if inspect.iscoroutinefunction(fn):
 
@@ -47,12 +54,18 @@ def guard(fn):
         async def _w(*args, **kwargs):
             try:
                 return await fn(*args, **kwargs)
-            except DoesNotExistInDatabaseException as e:
-                raise HTTPException(status_code=404, detail=str(e))
             except Exception as e:
+                # Check mapped exceptions
+                for exc_class, status_code, log_level, log_msg in EXCEPTION_MAPPINGS:
+                    if isinstance(e, exc_class):
+                        getattr(logger, log_level)(f"{log_msg}: {e}")
+                        raise HTTPException(
+                            status_code=status_code, detail=str(log_msg)
+                        )
+
+                # Unhandled exception
                 logger.error(f"Unhandled exception: {e}")
                 raise HTTPException(status_code=500, detail="Internal Server Error")
-            ...
 
         return _w
 
@@ -60,12 +73,15 @@ def guard(fn):
     def _w(*args, **kwargs):
         try:
             return fn(*args, **kwargs)
-        except DoesNotExistInDatabaseException as e:
-            raise HTTPException(status_code=404, detail=str(e))
         except Exception as e:
+            # Check mapped exceptions
+            for exc_class, status_code, log_level, log_msg in EXCEPTION_MAPPINGS:
+                if isinstance(e, exc_class):
+                    getattr(logger, log_level)(f"{log_msg}: {e}")
+                    raise HTTPException(status_code=status_code, detail=str(e))
+
+            # Unhandled exception
             logger.error(f"Unhandled exception: {e}")
             raise HTTPException(status_code=500, detail="Internal Server Error")
-
-        ...
 
     return _w

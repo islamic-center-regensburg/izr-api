@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
+from src.core.exceptions import guard
 from src.core.router.router_builder import EndpointType, RouterBuilder
 from src.features.prayer_times_upload.component import PrayerTimesUploadComponent
 
@@ -30,6 +31,7 @@ class PrayerTimesUploadController:
         )
         return router_builder.get_router()
 
+    @guard
     def __upload_prayer_times(
         self,
         prayer_times_parser_provider: PrayerTimesParserProvider = Depends(
@@ -38,13 +40,8 @@ class PrayerTimesUploadController:
         minio_provider: MinioStorageProvider = Depends(get_minio_repository),
         prayer_time_upload_in: PrayerTimeUploadIn = Depends(),
     ) -> PrayerTimeUploadOut:
-        try:
-            return self.__prayer_times_upload_component.upload_prayer_times(
-                prayer_time_upload_in,
-                minio_provider,
-                prayer_times_parser_provider,
-            )
-        except ValueError as ve:
-            raise HTTPException(status_code=400, detail=str(ve)) from ve
-        except Exception as e:
-            raise HTTPException(status_code=500, detail="Internal server error") from e
+        return self.__prayer_times_upload_component.upload_prayer_times(
+            prayer_time_upload_in,
+            minio_provider,
+            prayer_times_parser_provider,
+        )

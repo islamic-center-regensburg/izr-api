@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from src.core.db.pagination import PaginatedResponse
+from src.core.exceptions import guard
 from src.features.prayer_config.component import PrayerConfigComponent
 from src.features.prayer_config.enums import CalculationMethod
 from src.features.prayer_config.schemas import (
@@ -9,7 +10,6 @@ from src.features.prayer_config.schemas import (
     PrayerTimeConfigurationUpdate,
 )
 from src.core.router.router_builder import EndpointType, RouterBuilder
-from src.core.logging.logger import logger
 
 
 class PrayerConfigController:
@@ -50,36 +50,28 @@ class PrayerConfigController:
         )
         return router_builder.get_router()
 
+    @guard
     def __get_all_configs(
         self, filter: PrayerConfigurationFilter = Depends()
     ) -> PaginatedResponse[PrayerConfigurationOut]:
-        try:
-            return self.__prayer_config_component.get_all_prayer_configurations(filter)
-        except Exception as e:
-            logger.error("Internal server error", exc_info=True)
-            raise HTTPException(status_code=500, detail="Internal server error") from e
+        return self.__prayer_config_component.get_all_prayer_configurations(filter)
 
+    @guard
     def __add_prayer_configuration(
         self, mosque_id: int, config_data: PrayerConfigurationIn
     ) -> PrayerConfigurationOut:
-        try:
-            return self.__prayer_config_component.add_prayer_configuration(
-                mosque_id, config_data
-            )
-        except Exception as e:
-            logger.error("Internal server error", exc_info=True)
-            raise HTTPException(status_code=500, detail="Internal server error") from e
+        return self.__prayer_config_component.add_prayer_configuration(
+            mosque_id, config_data
+        )
 
+    @guard
     def __update_prayer_configuration(
         self, prayer_config_id: int, config_data: PrayerTimeConfigurationUpdate
     ) -> PrayerConfigurationOut:
-        try:
-            return self.__prayer_config_component.update_prayer_configuration(
-                prayer_config_id, config_data
-            )
-        except Exception as e:
-            logger.error("Internal server error", exc_info=True)
-            raise HTTPException(status_code=500, detail="Internal server error") from e
+        return self.__prayer_config_component.update_prayer_configuration(
+            prayer_config_id, config_data
+        )
 
+    @guard
     def __get_calculation_methods(self) -> dict[int, str]:
         return CalculationMethod.labels()

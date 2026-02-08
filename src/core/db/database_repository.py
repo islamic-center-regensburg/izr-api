@@ -10,9 +10,12 @@ from sqlmodel import Session, SQLModel, select
 
 from src.core.db.filters import Filter
 from src.core.db.order_by import OrderBy
-from src.core.exceptions import DoesNotExistInDatabaseException
 
 ResourceId = Union[int, str]
+
+
+class DoesNotExistInDatabaseException(Exception):
+    pass
 
 
 @dataclass

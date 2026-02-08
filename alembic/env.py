@@ -7,7 +7,6 @@ from src.features.event.schemas import (
     EventTable,
     EventTranslationTable,
 )
-from src.features.media.schemas import MediaTable
 from src.features.mosque.schemas import MosqueTable
 from src.features.prayer_config.schemas import PrayerConfigurationTable
 from src.features.prayer_iqama.schemas import PrayerIqamaTable
@@ -30,7 +29,6 @@ class DatabaseMigration:
             PrayerTimesTable,
             PrayerTimeUploadTable,
             PrayerIqamaTable,
-            MediaTable,
             EventTable,
             EventTranslationTable,
         }:

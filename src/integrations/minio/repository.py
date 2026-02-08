@@ -15,7 +15,7 @@ class MinioStorageProvider:
         self,
         client: Minio,
         settings: MinioSettings,
-        directory: DirectoryEnum,
+        directory: DirectoryEnum | None = None,
     ) -> None:
         self._client = client
         self._settings = settings
@@ -27,15 +27,20 @@ class MinioStorageProvider:
 
     @property
     def directory(self) -> str:
-        match self._directory:
+        return self.to_dir_name(self._directory)
+
+    def to_dir_name(self, dir_enum: DirectoryEnum) -> str:
+        match dir_enum:
             case DirectoryEnum.PRAYER_TIMES:
                 return self._settings.prayer_times_directory
             case DirectoryEnum.DB_BACKUPS:
                 return self._settings.db_backups_directory
             case DirectoryEnum.MEDIA:
                 return self._settings.media_directory
+            case None:
+                return ""
             case _:
-                raise ValueError(f"Unsupported directory enum: {self._directory!r}")
+                raise ValueError(f"Unsupported directory enum: {dir_enum!r}")
 
     def _prefix(self) -> str:
         # keep it consistent and safe
@@ -46,6 +51,13 @@ class MinioStorageProvider:
         prefix = self._prefix()
         name = name.lstrip("/")
         return f"{prefix}/{name}" if prefix else name
+
+    def list_objects(self, prefix: str = "") -> list[str]:
+        full_prefix = self._object_key(prefix)
+        objects = self._client.list_objects(
+            self.bucket, prefix=full_prefix, recursive=True
+        )
+        return [obj.object_name for obj in objects]
 
     def ensure_bucket(self) -> None:
         bucket = self.bucket
