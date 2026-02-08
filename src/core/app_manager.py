@@ -106,7 +106,7 @@ class AppManager:
             prayer_times_router(self.__database_repository_provider),
             prayer_times_upload_router(self.__database_repository_provider),
             prayer_iqama_router(self.__database_repository_provider),
-            media_router(self.__database_repository_provider),
+            media_router(),
             event_router(self.__database_repository_provider),
         ]:
             self.__app.include_router(router)
