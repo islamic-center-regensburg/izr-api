@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-
+from uuid import UUID
 from fastapi import Query
 from pydantic import BaseModel
 from sqlmodel import Field
@@ -26,7 +26,7 @@ class MediaFilter(BaseModel):
 
 
 class DirectoryQuery(BaseModel):
-    mosque_id: int = Query(..., description="The ID of the mosque")
+    mosque_id: UUID = Query(..., description="The ID of the mosque")
     dir: str = Field(..., description="The directory path containing media files")
     media_category: DirectoryEnum = Field(
         ..., description="The category of media files (e.g., events, prayer_times)"

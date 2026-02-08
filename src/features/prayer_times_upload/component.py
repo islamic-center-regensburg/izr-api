@@ -36,7 +36,7 @@ class PrayerTimesUploadComponent:
             prayer_time_upload_in.mosque_id
         )
         mosque_name_cleaned = mosque.name.lower().replace(" ", "_")
-        stored_file_name = f"{mosque_name_cleaned}_prayer_times_{prayer_time_upload_in.year}.{prayer_time_upload_in.file_type}"
+        stored_file_name = f"{mosque.id}/{mosque_name_cleaned}_prayer_times_{prayer_time_upload_in.year}.{prayer_time_upload_in.file_type}"
 
         data = prayer_time_upload_in.file.file.read()
         minio_provider.upload_bytes(

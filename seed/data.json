@@ -1,7 +1,7 @@
 {
   "mosques": [
     {
-      "id": 1,
+      "id": "6d840c63-ac8c-479c-ac2d-804250dbe9de",
       "name": "Islamisches Zentrum Regensburg",
       "address": "Regensburg",
       "city": "Regensburg",
@@ -14,8 +14,8 @@
   ],
   "prayer_configs": [
     {
-      "id": 1,
-      "mosque_id": 1,
+      "id": "461610ad-1eb0-49d0-8b87-2434728c3758",
+      "mosque_id": "6d840c63-ac8c-479c-ac2d-804250dbe9de",
       "calculation_method": 3,
       "school": 0,
       "midnight_mode": 0,
@@ -37,8 +37,8 @@
       "calendar_method": "HJCoSA"
     },
     {
-      "id": 2,
-      "mosque_id": 1,
+      "id": "e92af6a7-4779-4727-8970-0bf7dc5e4c8b",
+      "mosque_id": "6d840c63-ac8c-479c-ac2d-804250dbe9de",
       "calculation_method": 99,
       "school": 0,
       "midnight_mode": 0,

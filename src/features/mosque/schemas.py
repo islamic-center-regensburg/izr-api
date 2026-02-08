@@ -1,4 +1,6 @@
 from typing import Optional
+import uuid
+from uuid import UUID
 from sqlmodel import SQLModel, Field
 
 from src.core.db.pagination import PageParams
@@ -19,7 +21,7 @@ class MosqueBase(SQLModel):
 
 class MosqueTable(MosqueBase, table=True):
     __tablename__ = "mosques"
-    id: int | None = Field(default=None, primary_key=True, index=True)
+    id: UUID | None = Field(default_factory=uuid.uuid4, primary_key=True, index=True)
 
 
 class MosqueIn(MosqueBase):
@@ -27,11 +29,11 @@ class MosqueIn(MosqueBase):
 
 
 class MosqueOut(MosqueBase):
-    id: int
+    id: UUID
 
 
 class Mosque(MosqueBase):
-    id: int
+    id: UUID
 
 
 Mosque
