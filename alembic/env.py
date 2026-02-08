@@ -3,6 +3,10 @@ from dotenv import load_dotenv
 from sqlalchemy import MetaData
 from sqlmodel import SQLModel
 
+from src.features.event.schemas import (
+    EventTable,
+    EventTranslationTable,
+)
 from src.features.media.schemas import MediaTable
 from src.features.mosque.schemas import MosqueTable
 from src.features.prayer_config.schemas import PrayerConfigurationTable
@@ -27,6 +31,8 @@ class DatabaseMigration:
             PrayerTimeUploadTable,
             PrayerIqamaTable,
             MediaTable,
+            EventTable,
+            EventTranslationTable,
         }:
             model()
         return SQLModel.metadata
