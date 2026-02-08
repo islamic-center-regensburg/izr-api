@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from src.core.db.pagination import PaginatedResponse
+from src.core.exceptions import guard
 from src.features.mosque.component import MosqueComponent
 from src.features.mosque.schemas import MosqueIn, MosqueFilter, MosqueOut, MosqueUpdate
 from src.core.router.router_builder import EndpointType, RouterBuilder
@@ -53,13 +54,10 @@ class MosqueController:
             logger.error("Internal server error", exc_info=True)
             raise HTTPException(status_code=500, detail="Internal server error") from e
 
+    @guard
     def __get_by_id(self, mosque_id: int) -> MosqueOut:
-        try:
-            mosque = self.__mosque_component.get_mosque_by_id(mosque_id)
-            return mosque
-        except Exception as e:
-            logger.error("Internal server error", exc_info=True)
-            raise HTTPException(status_code=500, detail="Internal server error") from e
+        mosque = self.__mosque_component.get_mosque_by_id(mosque_id)
+        return mosque
 
     def __add_mosque(self, mosque_data: MosqueIn) -> MosqueOut:
         try:

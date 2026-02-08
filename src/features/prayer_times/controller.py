@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException
-from src.core.logging.logger import logger
+from fastapi import APIRouter, Depends
+from src.core.exceptions import guard
 from src.core.router.router_builder import EndpointType, RouterBuilder
 from src.features.prayer_times.component import PrayerTimesComponent
 from src.features.prayer_times.schemas import (
@@ -34,23 +34,17 @@ class PrayerTimesController:
 
         return router_builder.get_router()
 
+    @guard
     def __get_prayer_times(self, params: PrayerTimesTimingsParams = Depends()):
-        try:
-            return self.__prayer_times_component.get_prayer_times(params)
-        except Exception:
-            logger.error("Internal server error", exc_info=True)
-            raise HTTPException(status_code=500, detail="Internal server error")
+        return self.__prayer_times_component.get_prayer_times(params)
 
+    @guard
     def __get_prayer_times_for_mosque(
         self,
         mosque_id: int,
         source: PrayerTimesSourceParams = Depends(),
         filters: PrayerTimesFilter = Depends(),
     ):
-        try:
-            return self.__prayer_times_component.get_prayer_times_for_mosque(
-                mosque_id, source, filters
-            )
-        except Exception as e:
-            logger.error("Internal server error", exc_info=True)
-            raise HTTPException(status_code=500, detail="Internal server error") from e
+        return self.__prayer_times_component.get_prayer_times_for_mosque(
+            mosque_id, source, filters
+        )
