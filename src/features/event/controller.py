@@ -78,10 +78,11 @@ class EventController:
     @guard
     def __create_translation_for_event(
         self,
+        mosque_id: int,
         event_id: int,
         event_translation_in: EventTranslationIn = Depends(),
         minio_repository_provider: MinioStorageProvider = Depends(get_minio_repository),
     ) -> EventTranslationRead:
         return self.__event_component.create_event_translation(
-            event_id, event_translation_in, minio_repository_provider
+            mosque_id, event_id, event_translation_in, minio_repository_provider
         )
