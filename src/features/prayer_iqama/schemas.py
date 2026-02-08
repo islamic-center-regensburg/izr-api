@@ -1,5 +1,5 @@
 from __future__ import annotations
-
+from uuid import UUID, uuid4
 from datetime import time
 from typing import Optional
 
@@ -11,7 +11,7 @@ from src.features.prayer_iqama.enums import IqamaMode, PrayerName
 
 
 class PrayerIqamaBase(SQLModel):
-    mosque_id: int = Field(
+    mosque_id: UUID = Field(
         ...,
         foreign_key="mosques.id",
         index=True,
@@ -36,7 +36,7 @@ class PrayerIqamaIn(PrayerIqamaBase):
 
 
 class PrayerIqamaOut(PrayerIqamaBase):
-    id: int
+    id: UUID
 
 
 class PrayerIqamaTable(PrayerIqamaBase, table=True):
@@ -48,7 +48,7 @@ class PrayerIqamaTable(PrayerIqamaBase, table=True):
 
     __tablename__ = "prayer_iqamas"
 
-    id: Optional[int] = Field(default=None, primary_key=True, index=True)
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
 
 
 # =========================
@@ -57,7 +57,7 @@ class PrayerIqamaTable(PrayerIqamaBase, table=True):
 
 
 class PrayerIqamaUpdate(SQLModel):
-    mosque_id: int | None = None
+    mosque_id: UUID | None = None
     prayer_name: PrayerName | None = None
     mode: IqamaMode | None = None
     offset_minutes: int | None = None
@@ -69,6 +69,6 @@ class PrayerIqamaUpdate(SQLModel):
 
 
 class PrayerIqamaFilter(PageParams):
-    mosque_id: Optional[int] = None
+    mosque_id: Optional[UUID] = None
     prayer_name: Optional[PrayerName] = None
     mode: Optional[IqamaMode] = None

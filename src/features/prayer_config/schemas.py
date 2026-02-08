@@ -1,4 +1,5 @@
 from typing import Optional
+from uuid import UUID, uuid4
 
 from pydantic import model_validator
 from sqlmodel import Field, SQLModel
@@ -15,7 +16,7 @@ from src.features.prayer_config.enums import (
 
 
 class PrayerConfigurationBase(SQLModel):
-    mosque_id: int = Field(foreign_key="mosques.id", index=True)
+    mosque_id: UUID = Field(foreign_key="mosques.id", index=True)
 
     calculation_method: CalculationMethod = Field(
         description="Calculation method for prayer times"
@@ -95,7 +96,7 @@ class PrayerConfigurationBase(SQLModel):
 
 class PrayerConfigurationTable(PrayerConfigurationBase, table=True):
     __tablename__ = "prayer_configurations"  # pyright: ignore [reportAssignmentType]
-    id: int = Field(default=None, primary_key=True, index=True)
+    id: UUID | None = Field(default_factory=uuid4, primary_key=True, index=True)
 
 
 class PrayerConfigurationIn(PrayerConfigurationBase):
@@ -103,8 +104,8 @@ class PrayerConfigurationIn(PrayerConfigurationBase):
 
 
 class PrayerConfigurationOut(PrayerConfigurationIn):
-    id: int
-    mosque_id: int
+    id: UUID
+    mosque_id: UUID
 
 
 class PrayerConfiguration(PrayerConfigurationOut):
@@ -112,7 +113,7 @@ class PrayerConfiguration(PrayerConfigurationOut):
 
 
 class PrayerTimeConfigurationUpdate(SQLModel):
-    mosque_id: Optional[int] | None = None
+    mosque_id: Optional[UUID] | None = None
     calculation_method: Optional[CalculationMethod] | None = None
     school: Optional[School] | None = None
     midnight_mode: Optional[MidnightMode] | None = None
@@ -134,5 +135,5 @@ class PrayerTimeConfigurationUpdate(SQLModel):
 
 
 class PrayerConfigurationFilter(PageParams):
-    id: Optional[int] = None
-    mosque_id: Optional[int] = None
+    id: Optional[UUID] = None
+    mosque_id: Optional[UUID] = None

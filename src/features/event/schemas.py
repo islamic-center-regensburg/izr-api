@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 from typing import Optional
-
+from uuid import UUID, uuid4
 from fastapi import File, Form, UploadFile
 from pydantic import BaseModel
 from sqlmodel import SQLModel, Field
@@ -12,7 +12,7 @@ from src.features.event.enums import SupportedLanguages
 
 
 class EventBase(SQLModel):
-    mosque_id: int = Field(
+    mosque_id: UUID = Field(
         ..., description="ID of the mosque associated with the event"
     )
 
@@ -27,7 +27,7 @@ class EventCreate(EventBase):
 class EventTable(EventBase, table=True):
     __tablename__ = "events"
 
-    id: int = Field(..., primary_key=True)
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
     created_at: datetime = Field(
         ...,
         default_factory=lambda: datetime.now(timezone.utc),
@@ -86,15 +86,15 @@ class EventTranslationIn(SQLModel):
 class EventTranslationTable(EventTranslationBase, table=True):
     __tablename__ = "event_translations"
 
-    id: int = Field(..., primary_key=True)
-    event_id: int = Field(
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    event_id: UUID = Field(
         ..., foreign_key="events.id", description="ID of the associated event"
     )
 
 
 class EventOut(SQLModel):
-    id: int
-    mosque_id: int
+    id: UUID
+    mosque_id: UUID
     created_at: datetime
     updated_at: datetime
     valid_to: datetime
