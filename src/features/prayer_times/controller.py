@@ -1,3 +1,4 @@
+from uuid import UUID
 from fastapi import APIRouter, Depends
 from src.core.exceptions import guard
 from src.core.router.router_builder import EndpointType, RouterBuilder
@@ -41,7 +42,7 @@ class PrayerTimesController:
     @guard
     def __get_prayer_times_for_mosque(
         self,
-        mosque_id: int,
+        mosque_id: UUID,
         source: PrayerTimesSourceParams = Depends(),
         filters: PrayerTimesFilter = Depends(),
     ):

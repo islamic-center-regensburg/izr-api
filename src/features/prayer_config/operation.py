@@ -1,3 +1,4 @@
+from uuid import UUID
 from src.core.db.pagination import PaginationBuilder
 from src.features.prayer_config.exceptions import PrayerConfigNotFoundException
 from src.features.prayer_config.schemas import (
@@ -29,7 +30,7 @@ class PrayerConfigOperation:
                 size=filter.size,
             )
 
-    def get_by_id(self, prayer_config_id: int):
+    def get_by_id(self, prayer_config_id: UUID):
         with self.db_repository.get_database_repository() as db:
             config = db.get_by_id(PrayerConfigurationTable, prayer_config_id)
             return config

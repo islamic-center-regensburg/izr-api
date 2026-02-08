@@ -1,3 +1,4 @@
+from uuid import UUID
 from fastapi import APIRouter, Depends
 
 from src.core.db.pagination import PaginatedResponse
@@ -61,7 +62,7 @@ class PrayerIqamaController:
     @guard
     def __get_prayer_iqamas_for_mosque(
         self,
-        mosque_id: int,
+        mosque_id: UUID,
     ) -> list[PrayerIqamaOut]:
         return self.__prayer_iqama_component.get_prayer_iqamas_for_mosque(mosque_id)
 
@@ -71,7 +72,7 @@ class PrayerIqamaController:
 
     @guard
     def __update_prayer_iqama(
-        self, prayer_iqama_id: int, prayer_iqama_update: PrayerIqamaUpdate
+        self, prayer_iqama_id: UUID, prayer_iqama_update: PrayerIqamaUpdate
     ) -> PrayerIqamaOut:
         return self.__prayer_iqama_component.update_prayer_iqama(
             prayer_iqama_id, prayer_iqama_update

@@ -10,6 +10,7 @@ from src.core.exceptions import (
 from src.core.logging.logger import logger
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import Field
 from pydantic_core import ValidationError as CoreValidationError
 from pydantic_settings import BaseSettings
@@ -29,9 +30,14 @@ from src.features.media.router import get_router as media_router
 from src.features.event.router import get_router as event_router
 
 
+class CORSSettings(BaseSettings):
+    frontend_url: str = Field(default="http://localhost:3000", alias="FRONTEND_URL")
+
+
 class AppManagerSettings(BaseSettings):
     version: str = Field(default="0.0.0", alias="APP_VERSION")
     title: str = Field(default="IZR API", alias="APP_TITLE")
+    cors_settings: CORSSettings = CORSSettings()
 
 
 class AppManager:
@@ -61,7 +67,7 @@ class AppManager:
             core_validation_exception_handler,
         )
         # self.__app_manager_settings = app_manager_settings
-        # self.__cors_settings = app_manager_settings.cors_settings
+        self.__cors_settings = app_manager_settings.cors_settings
 
         self.__database_repository_provider = DatabaseRepositoryProvider(db_connection)
 
@@ -72,7 +78,7 @@ class AppManager:
         yield
 
     def get_fast_api_app(self) -> FastAPI:
-        # self.__add_middlewares()
+        self.__add_middlewares()
         self.__add_routers()
         return self.__app
 
@@ -111,12 +117,12 @@ class AppManager:
         ]:
             self.__app.include_router(router)
 
-    # def __add_middlewares(self):
-    #     logger.info(f"Allowed origins: {self.__cors_settings.frontend_url}")
-    #     self.__app.add_middleware(
-    #         CORSMiddleware,
-    #         allow_origins=[self.__cors_settings.frontend_url],
-    #         allow_methods=["*"],
-    #         allow_headers=["*"],
-    #         allow_credentials=True,
-    #     )
+    def __add_middlewares(self):
+        logger.info(f"Allowed origins: {self.__cors_settings.frontend_url}")
+        self.__app.add_middleware(
+            CORSMiddleware,
+            allow_origins=[self.__cors_settings.frontend_url],
+            allow_methods=["*"],
+            allow_headers=["*"],
+            allow_credentials=True,
+        )

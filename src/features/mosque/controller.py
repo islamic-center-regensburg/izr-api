@@ -1,3 +1,4 @@
+from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from src.core.db.pagination import PaginatedResponse
 from src.core.exceptions import guard
@@ -24,7 +25,7 @@ class MosqueController:
         router_builder.add_method(
             "/{mosque_id}",
             endpoint_type=EndpointType.GET,
-            endpoint=self.__get_by_id,
+            endpoint=self.__get_mosque_by_id,
             response_model=MosqueOut,
             summary="Get mosque by ID",
         )
@@ -55,7 +56,7 @@ class MosqueController:
             raise HTTPException(status_code=500, detail="Internal server error") from e
 
     @guard
-    def __get_by_id(self, mosque_id: int) -> MosqueOut:
+    def __get_mosque_by_id(self, mosque_id: UUID) -> MosqueOut:
         mosque = self.__mosque_component.get_mosque_by_id(mosque_id)
         return mosque
 
@@ -66,7 +67,7 @@ class MosqueController:
             logger.error("Internal server error", exc_info=True)
             raise HTTPException(status_code=500, detail="Internal server error") from e
 
-    def __update_mosque(self, mosque_id: int, mosque_data: MosqueUpdate) -> MosqueOut:
+    def __update_mosque(self, mosque_id: UUID, mosque_data: MosqueUpdate) -> MosqueOut:
         try:
             updated_mosque = self.__mosque_component.update_mosque(
                 mosque_id, mosque_data

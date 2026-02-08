@@ -1,3 +1,4 @@
+from uuid import UUID
 from venv import logger
 from src.features.event.exception import EventTranslationAlreadyExists
 from src.features.event.schemas import (
@@ -21,10 +22,10 @@ class EventComponent:
         self.__event_operation = event_operation
         self.mosque_operation = mosque_operation
 
-    def get_event(self, event_id: int, filter: EventFilter):
+    def get_event(self, event_id: UUID, filter: EventFilter):
         return self.__event_operation.get_event_by_id(event_id, filter)
 
-    def get_all_events(self, mosque_id: int, filter: EventPaginationFilter):
+    def get_all_events(self, mosque_id: UUID, filter: EventPaginationFilter):
         return self.__event_operation.get_all_events(mosque_id, filter)
 
     def create_event(
@@ -35,8 +36,8 @@ class EventComponent:
 
     def create_event_translation(
         self,
-        mosque_id: int,
-        event_id: int,
+        mosque_id: UUID,
+        event_id: UUID,
         event_translation_in: EventTranslationIn,
         description: str | None,
         minio_provider: MinioStorageProvider,
