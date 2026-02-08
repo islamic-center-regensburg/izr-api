@@ -1,7 +1,7 @@
-from enum import IntEnum
+from enum import StrEnum
 
 
-class DirectoryEnum(IntEnum):
-    PRAYER_TIMES = 0
-    DB_BACKUPS = 1
-    MEDIA = 2
+class DirectoryEnum(StrEnum):
+    PRAYER_TIMES = "prayer_times_objects"
+    DB_BACKUPS = "backups_objects"
+    MEDIA = "media_objects"
