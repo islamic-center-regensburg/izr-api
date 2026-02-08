@@ -1,5 +1,5 @@
 from src.features.media.exception import DeleteMediaException, GetMediaException
-from src.features.media.schemas import DirectoryQuery, MediaOut
+from src.features.media.schemas import DirectoryQuery, MediaFilter, MediaOut
 from src.integrations.minio.repository import MinioStorageProvider
 
 
@@ -7,6 +7,7 @@ class MediaComponent:
     def get_all_media_in_directory(
         self,
         query: DirectoryQuery,
+        filter: MediaFilter,
         minio_provider: MinioStorageProvider,
     ) -> list[MediaOut]:
         path = f"{minio_provider.to_dir_name(query.media_category)}/{query.mosque_id}/{query.dir}"
@@ -15,12 +16,20 @@ class MediaComponent:
         media_list = []
         for obj in objects:
             try:
-                url = minio_provider.presigned_get_url(filename=obj)
+                content_type = filter.content_type
+                if filter.download_link:
+                    content_type = None  # Let Minio determine the content type for the presigned URL
+                url = minio_provider.presigned_get_url(
+                    filename=obj, content_type=content_type
+                )
                 media_list.append(
                     MediaOut(object="/".join(obj.split("/")[2:]), url=url)
                 )
             except Exception as e:
                 raise GetMediaException(f"Failed to get media: {str(e)}") from e
+
+        if len(media_list) == 0:
+            raise GetMediaException("No media found in the specified directory.")
         return media_list
 
     def delete_all_media_in_directory(

@@ -75,7 +75,6 @@ class EventTranslationRead(EventTranslationBase):
 
 class EventTranslationIn(SQLModel):
     title: str | None = Form(None, description="Title of the event")
-    description: str | None = Form(None, description="Description of the event")
     language: SupportedLanguages = Form(
         ..., description="Language of the event translation"
     )

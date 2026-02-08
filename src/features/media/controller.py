@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from src.core.exceptions import guard
 from src.core.router.router_builder import EndpointType, RouterBuilder
 from src.features.media.component import MediaComponent
-from src.features.media.schemas import DirectoryQuery, MediaOut
+from src.features.media.schemas import DirectoryQuery, MediaFilter, MediaOut
 from src.features.media.storage import get_minio_repository
 from src.integrations.minio.repository import MinioStorageProvider
 
@@ -36,9 +36,12 @@ class MediaController:
     def __get_media(
         self,
         query: DirectoryQuery = Depends(),
+        filter: MediaFilter = Depends(),
         minio_provider: MinioStorageProvider = Depends(get_minio_repository),
     ) -> list[MediaOut]:
-        return self.__media_component.get_all_media_in_directory(query, minio_provider)
+        return self.__media_component.get_all_media_in_directory(
+            query, filter, minio_provider
+        )
 
     @guard
     def __delete_media(

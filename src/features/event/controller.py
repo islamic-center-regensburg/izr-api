@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Body, Depends
 
 from src.core.exceptions import guard
 from src.core.router.router_builder import EndpointType, RouterBuilder
@@ -81,8 +81,15 @@ class EventController:
         mosque_id: int,
         event_id: int,
         event_translation_in: EventTranslationIn = Depends(),
+        description: str | None = Body(
+            None, description="Description of the event translation"
+        ),
         minio_repository_provider: MinioStorageProvider = Depends(get_minio_repository),
     ) -> EventTranslationRead:
         return self.__event_component.create_event_translation(
-            mosque_id, event_id, event_translation_in, minio_repository_provider
+            mosque_id,
+            event_id,
+            event_translation_in,
+            description,
+            minio_repository_provider,
         )

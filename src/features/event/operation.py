@@ -109,6 +109,7 @@ class EventOperation:
         self,
         event_id: int,
         event_translation_in: EventTranslationIn,
+        description: str | None,
         storage_dir_path: str | None = None,
     ) -> EventTranslationRead:
         with self.__db_repository_provider.get_database_repository() as db:
@@ -116,7 +117,7 @@ class EventOperation:
                 EventTranslationTable(
                     event_id=event_id,
                     title=event_translation_in.title,
-                    description=event_translation_in.description,
+                    description=description,
                     language=event_translation_in.language,
                     media=storage_dir_path,
                 )

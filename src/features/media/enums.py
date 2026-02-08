@@ -6,7 +6,7 @@ class MediaFileType(StrEnum):
     VIDEO = "video"
 
 
-class AllowedMeidaType(StrEnum):
+class AllowedMediaType(StrEnum):
     JPEG = "image/jpeg"
     PNG = "image/png"
     WEBP = "image/webp"
