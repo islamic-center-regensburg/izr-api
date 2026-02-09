@@ -66,11 +66,16 @@ class PrayerTimesOperation:
         mosque: Mosque,
         filters: PrayerTimesFilter,
     ):
-        return self.__aladhan_prayer_times_adapter.toPrayerTimesOut(
-            self.__aladhan_api_client_provider.get_timings(
+        if filters.day:
+            result = self.__aladhan_api_client_provider.get_timings(
                 config=prayer_config, mosque=mosque, filters=filters
             )
-        )
+        else:
+            result = self.__aladhan_api_client_provider.get_calendar(
+                params=filters, config=prayer_config, mosque=mosque
+            )
+
+        return self.__aladhan_prayer_times_adapter.toPrayerTimesOut(result)
 
     def fetch_prayer_times(self, params: PrayerTimesTimingsParams):
         func = (

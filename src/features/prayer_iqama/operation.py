@@ -40,7 +40,7 @@ class PrayerIqamaOperation:
 
     def get_all_prayer_iqamas_for_mosque(self, mosque_id: UUID) -> list[PrayerIqamaOut]:
         filters = [
-            Filter(field="mosque_id", value=mosque_id, operator=Operator.EQ),
+            Filter(attribute="mosque_id", value=mosque_id, operator=Operator.EQ),
         ]
         with self.__db_respository_provider.get_database_repository() as db:
             data = db.get_all(

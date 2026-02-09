@@ -3,6 +3,8 @@ include:
 - docker/api.compose.yaml
 - docker/db.compose.yaml
 - docker/minio.compose.yaml
+- docker/screen.compose.yaml
+- docker/admin.compose.yaml
 
 networks:
   izr-api-net:
