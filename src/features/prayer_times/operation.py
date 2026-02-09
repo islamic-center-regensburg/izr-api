@@ -1,3 +1,4 @@
+from uuid import UUID
 from src.core.db.database_repository_provider import DatabaseRepositoryProvider
 from src.core.db.filters import Filter, Operator
 from src.features.mosque.schemas import Mosque
@@ -26,7 +27,7 @@ class PrayerTimesOperation:
         self.__aladhan_prayer_times_adapter = AlAdhanPrayerTimesAdapter()
 
     def save_prayer_times_rows(
-        self, mosque_id: int, upload_id: int, rows: list[PrayerTimesIn]
+        self, mosque_id: UUID, upload_id: UUID, rows: list[PrayerTimesIn]
     ):
         with self.__db_repository.get_database_repository() as db:
             for row in rows:
@@ -48,7 +49,7 @@ class PrayerTimesOperation:
                     )
                 )
 
-    def get_stored_prayer_times(self, mosque_id: int, filters: PrayerTimesFilter):
+    def get_stored_prayer_times(self, mosque_id: UUID, filters: PrayerTimesFilter):
         filters = [
             Filter(attribute="mosque_id", operator=Operator.EQ, value=mosque_id),
             Filter(attribute="year", operator=Operator.EQ, value=filters.year),
@@ -65,11 +66,16 @@ class PrayerTimesOperation:
         mosque: Mosque,
         filters: PrayerTimesFilter,
     ):
-        return self.__aladhan_prayer_times_adapter.toPrayerTimesOut(
-            self.__aladhan_api_client_provider.get_timings(
+        if filters.day:
+            result = self.__aladhan_api_client_provider.get_timings(
                 config=prayer_config, mosque=mosque, filters=filters
             )
-        )
+        else:
+            result = self.__aladhan_api_client_provider.get_calendar(
+                params=filters, config=prayer_config, mosque=mosque
+            )
+
+        return self.__aladhan_prayer_times_adapter.toPrayerTimesOut(result)
 
     def fetch_prayer_times(self, params: PrayerTimesTimingsParams):
         func = (

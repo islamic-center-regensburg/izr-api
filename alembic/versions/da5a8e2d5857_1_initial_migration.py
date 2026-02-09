@@ -1,8 +1,8 @@
-"""0 first migration
+"""1 initial migration
 
-Revision ID: d1268c8251c2
+Revision ID: da5a8e2d5857
 Revises:
-Create Date: 2026-02-08 19:37:50.295420
+Create Date: 2026-02-09 09:47:06.176600
 
 """
 
@@ -14,7 +14,7 @@ import sqlmodel
 
 
 # revision identifiers, used by Alembic.
-revision: str = "d1268c8251c2"
+revision: str = "da5a8e2d5857"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -42,7 +42,7 @@ def upgrade() -> None:
         sa.Column("latitude", sa.Float(), nullable=False),
         sa.Column("longitude", sa.Float(), nullable=False),
         sa.Column("timezone", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("prayer_config_id", sa.Integer(), nullable=True),
+        sa.Column("prayer_config_id", sa.Uuid(), nullable=True),
         sa.Column("id", sa.Uuid(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )

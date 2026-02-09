@@ -1,3 +1,4 @@
+from uuid import UUID
 from src.core.db.database_repository_provider import DatabaseRepositoryProvider
 
 from src.core.db.filters import Filter, Operator
@@ -22,7 +23,7 @@ class EventOperation:
     def __init__(self, db_repository_provider: DatabaseRepositoryProvider):
         self.__db_repository_provider = db_repository_provider
 
-    def get_event_by_id(self, event_id: int, filter: EventFilter) -> EventOut:
+    def get_event_by_id(self, event_id: UUID, filter: EventFilter) -> EventOut:
         with self.__db_repository_provider.get_database_repository() as db:
             filters = [
                 Filter(attribute="id", value=event_id, operator=Operator.EQ),
@@ -53,7 +54,7 @@ class EventOperation:
             )
 
     def get_all_events(
-        self, mosque_id: int, filter: EventPaginationFilter
+        self, mosque_id: UUID, filter: EventPaginationFilter
     ) -> EventListOut:
         with self.__db_repository_provider.get_database_repository() as db:
             events = []
@@ -107,7 +108,7 @@ class EventOperation:
 
     def create_event_translation(
         self,
-        event_id: int,
+        event_id: UUID,
         event_translation_in: EventTranslationIn,
         description: str | None,
         storage_dir_path: str | None = None,

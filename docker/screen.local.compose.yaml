@@ -1,0 +1,21 @@
+---
+services:
+  screen_local:
+    build:
+      context: ../../izr-screen
+      args:
+      - VITE_API_BASE_URL=http://192.168.1.55:8000
+
+    volumes:
+    - cache:/code/.cache
+    ports:
+    - 8001:80
+
+    depends_on:
+      api:
+        condition: service_started
+    networks:
+    - izr-api-net
+
+volumes:
+  cache:

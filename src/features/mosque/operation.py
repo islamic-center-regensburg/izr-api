@@ -1,3 +1,4 @@
+from uuid import UUID
 from src.core.db.pagination import PaginationBuilder
 from src.core.db.filters import Filter, Operator
 from src.core.db.database_repository_provider import DatabaseRepositoryProvider
@@ -45,7 +46,7 @@ class MosqueOperation:
             mosque = db.create(mosque_record)
             return mosque
 
-    def update_mosque(self, mosque_id: int, mosque_data):
+    def update_mosque(self, mosque_id: UUID, mosque_data):
         with self.db_repository.get_database_repository() as db:
             mosque = db.get_by_id(MosqueTable, mosque_id)
             if mosque is None:

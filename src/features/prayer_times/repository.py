@@ -74,13 +74,15 @@ class AlAdhanAPIClientProvider:
         self,
         *,
         params: PrayerTimesCalendarParams,
+        config: PrayerConfiguration | None = None,
+        mosque: MosqueBase | None = None,
     ) -> dict[str, Any]:
         """
         GET /calendar/{year}/{month} or /hijriCalendar/{year}/{month}
         """
-        query_params: dict[str, Any] = PrayerTimesTimingsParamsQueryAdapter.to_query(
-            params
-        )
+        query_params: dict[str, Any] = PrayerConfigurationQueryAdapter.to_query(
+            config
+        ) | MosqueQueryAdapter.to_query(mosque)
         endpoint = "/hijriCalendar" if params.hijri else "/calendar"
         r = self._http.get(
             f"{endpoint}/{params.year}{'/' + str(params.month) if params.month is not None else ''}",

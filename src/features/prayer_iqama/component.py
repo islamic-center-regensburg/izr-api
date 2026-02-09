@@ -1,3 +1,4 @@
+from uuid import UUID
 from src.core.db.pagination import PaginatedResponse
 from src.features.prayer_iqama.operation import PrayerIqamaOperation
 from src.features.prayer_iqama.schemas import (
@@ -23,7 +24,7 @@ class PrayerIqamaComponent:
 
     def get_prayer_iqamas_for_mosque(
         self,
-        mosque_id: int,
+        mosque_id: UUID,
     ) -> list[PrayerIqamaOut]:
         return self.__prayer_iqama_operation.get_all_prayer_iqamas_for_mosque(mosque_id)
 
@@ -35,7 +36,7 @@ class PrayerIqamaComponent:
 
     def update_prayer_iqama(
         self,
-        prayer_iqama_id: int,
+        prayer_iqama_id: UUID,
         prayer_iqama_update: PrayerIqamaUpdate,
     ) -> PrayerIqamaOut:
         return self.__prayer_iqama_operation.update(

@@ -1,3 +1,4 @@
+from uuid import UUID
 from fastapi import APIRouter, Body, Depends
 
 from src.core.exceptions import guard
@@ -57,12 +58,12 @@ class EventController:
         return router_builder.get_router()
 
     @guard
-    def __get_event(self, event_id: int, filter: EventFilter = Depends()) -> EventOut:
+    def __get_event(self, event_id: UUID, filter: EventFilter = Depends()) -> EventOut:
         return self.__event_component.get_event(event_id, filter)
 
     @guard
     def __get_all_events(
-        self, mosque_id: int, filters: EventPaginationFilter = Depends()
+        self, mosque_id: UUID, filters: EventPaginationFilter = Depends()
     ) -> EventListOut:
         return self.__event_component.get_all_events(mosque_id, filters)
 
@@ -78,8 +79,8 @@ class EventController:
     @guard
     def __create_translation_for_event(
         self,
-        mosque_id: int,
-        event_id: int,
+        mosque_id: UUID,
+        event_id: UUID,
         event_translation_in: EventTranslationIn = Depends(),
         description: str | None = Body(
             None, description="Description of the event translation"

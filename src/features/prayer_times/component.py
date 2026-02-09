@@ -1,3 +1,4 @@
+from uuid import UUID
 from src.features.mosque.operation import MosqueOperation
 from src.features.prayer_config.operation import PrayerConfigOperation
 from src.features.prayer_times.operation import PrayerTimesOperation
@@ -28,7 +29,7 @@ class PrayerTimesComponent:
 
     def get_prayer_times_for_mosque(
         self,
-        mosque_id: int,
+        mosque_id: UUID,
         source: PrayerTimesSourceParams,
         filters: PrayerTimesFilter,
     ):

@@ -1,3 +1,4 @@
+from uuid import UUID
 from src.features.mosque.schemas import MosqueIn, MosqueFilter, MosqueUpdate
 from src.features.mosque.operation import MosqueOperation
 from src.features.prayer_config.operation import PrayerConfigOperation
@@ -16,7 +17,7 @@ class MosqueComponent:
         mosques = self.mosque_operation.get_all_mosques(filter)
         return mosques
 
-    def get_mosque_by_id(self, mosque_id: int):
+    def get_mosque_by_id(self, mosque_id: UUID):
         mosque = self.mosque_operation.get_mosque_by_id(mosque_id)
         return mosque
 
@@ -24,7 +25,7 @@ class MosqueComponent:
         mosque = self.mosque_operation.add_mosque(mosque_data)
         return mosque
 
-    def update_mosque(self, mosque_id: int, mosque_data: MosqueUpdate):
+    def update_mosque(self, mosque_id: UUID, mosque_data: MosqueUpdate):
         if mosque_data.prayer_config_id is not None:
             prayer_config = self.prayer_config_operation.get_by_id(
                 mosque_data.prayer_config_id

@@ -1,3 +1,4 @@
+from uuid import UUID
 from src.core.db.database_repository_provider import DatabaseRepositoryProvider
 from src.core.db.filters import Filter, Operator
 from src.core.db.pagination import PaginatedResponse, PaginationBuilder
@@ -37,9 +38,9 @@ class PrayerIqamaOperation:
                 items=data, total=count, page=filter.page, size=filter.size
             )
 
-    def get_all_prayer_iqamas_for_mosque(self, mosque_id: int) -> list[PrayerIqamaOut]:
+    def get_all_prayer_iqamas_for_mosque(self, mosque_id: UUID) -> list[PrayerIqamaOut]:
         filters = [
-            Filter(field="mosque_id", value=mosque_id, operator=Operator.EQ),
+            Filter(attribute="mosque_id", value=mosque_id, operator=Operator.EQ),
         ]
         with self.__db_respository_provider.get_database_repository() as db:
             data = db.get_all(
@@ -62,7 +63,7 @@ class PrayerIqamaOperation:
 
     def update(
         self,
-        prayer_iqama_id: int,
+        prayer_iqama_id: UUID,
         prayer_iqama_update: PrayerIqamaUpdate,
     ) -> PrayerIqamaOut:
         with self.__db_respository_provider.get_database_repository() as db:

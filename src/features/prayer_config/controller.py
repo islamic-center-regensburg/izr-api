@@ -1,3 +1,4 @@
+from uuid import UUID
 from fastapi import APIRouter, Depends
 from src.core.db.pagination import PaginatedResponse
 from src.core.exceptions import guard
@@ -21,14 +22,14 @@ class PrayerConfigController:
         router_builder.add_method(
             "",
             endpoint_type=EndpointType.LIST,
-            endpoint=self.__get_all_configs,
+            endpoint=self.__get_all_prayer_configs,
             response_model=PaginatedResponse[PrayerConfigurationOut],
             summary="List prayer configurations",
         )
         router_builder.add_method(
             "",
             endpoint_type=EndpointType.CREATE,
-            endpoint=self.__add_prayer_configuration,
+            endpoint=self.__add_prayer_config,
             response_model=PrayerConfigurationOut,
             summary="Add prayer configuration",
         )
@@ -36,7 +37,7 @@ class PrayerConfigController:
         router_builder.add_method(
             "/{prayer_config_id}",
             endpoint_type=EndpointType.UPDATE,
-            endpoint=self.__update_prayer_configuration,
+            endpoint=self.__update_prayer_config,
             response_model=PrayerConfigurationOut,
             summary="Update prayer configuration",
         )
@@ -51,22 +52,22 @@ class PrayerConfigController:
         return router_builder.get_router()
 
     @guard
-    def __get_all_configs(
+    def __get_all_prayer_configs(
         self, filter: PrayerConfigurationFilter = Depends()
     ) -> PaginatedResponse[PrayerConfigurationOut]:
         return self.__prayer_config_component.get_all_prayer_configurations(filter)
 
     @guard
-    def __add_prayer_configuration(
-        self, mosque_id: int, config_data: PrayerConfigurationIn
+    def __add_prayer_config(
+        self, mosque_id: UUID, config_data: PrayerConfigurationIn
     ) -> PrayerConfigurationOut:
         return self.__prayer_config_component.add_prayer_configuration(
             mosque_id, config_data
         )
 
     @guard
-    def __update_prayer_configuration(
-        self, prayer_config_id: int, config_data: PrayerTimeConfigurationUpdate
+    def __update_prayer_config(
+        self, prayer_config_id: UUID, config_data: PrayerTimeConfigurationUpdate
     ) -> PrayerConfigurationOut:
         return self.__prayer_config_component.update_prayer_configuration(
             prayer_config_id, config_data
