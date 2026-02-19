@@ -1,0 +1,147 @@
+from uuid import UUID
+from src.core.db.database_repository_provider import DatabaseRepositoryProvider
+
+from src.core.db.filters import Filter, Operator
+from src.core.db.pagination import PaginationBuilder
+from src.features.post.schemas import (
+    PostPaginationFilter,
+    PostRead,
+    PostTranslationIn,
+    PostTranslationRead,
+    PostTranslationTable,
+)
+from src.features.post.schemas import (
+    PostFilter,
+    PostCreate,
+    PostListOut,
+    PostOut,
+    PostTable,
+)
+
+
+class PostOperation:
+    def __init__(self, db_repository_provider: DatabaseRepositoryProvider):
+        self.__db_repository_provider = db_repository_provider
+
+    def get_post_by_id(self, post_id: UUID, filter: PostFilter) -> PostOut:
+        with self.__db_repository_provider.get_database_repository() as db:
+            filters = [
+                Filter(attribute="id", value=post_id, operator=Operator.EQ),
+                Filter(
+                    attribute="valid_to", value=filter.date_from, operator=Operator.LE
+                ),
+            ]
+            if filter.content_type is not None:
+                filters.append(
+                    Filter(
+                        attribute="content_type",
+                        value=filter.content_type,
+                        operator=Operator.EQ,
+                    )
+                )
+            post_records: list[PostRead] = db.get_all(PostTable, filters=filters)
+            post = post_records[0]
+
+            filters = [
+                Filter(attribute="post_id", value=post.id, operator=Operator.EQ),
+                Filter(
+                    attribute="language", value=filter.language, operator=Operator.EQ
+                ),
+            ]
+            post_translation_records: list[PostTranslationRead] = db.get_all(
+                PostTranslationTable, filters=filters
+            )
+
+            return PostOut(
+                id=post.id,
+                mosque_id=post.mosque_id,
+                content_type=post.content_type,
+                created_at=post.created_at,
+                updated_at=post.updated_at,
+                valid_to=post.valid_to,
+                translations=post_translation_records,
+            )
+
+    def get_all_posts(
+        self, mosque_id: UUID, filter: PostPaginationFilter
+    ) -> PostListOut:
+        with self.__db_repository_provider.get_database_repository() as db:
+            posts = []
+
+            filters = [
+                Filter(attribute="mosque_id", value=mosque_id, operator=Operator.EQ),
+                Filter(
+                    attribute="valid_to", value=filter.date_from, operator=Operator.LE
+                ),
+            ]
+            if filter.content_type is not None:
+                filters.append(
+                    Filter(
+                        attribute="content_type",
+                        value=filter.content_type,
+                        operator=Operator.EQ,
+                    )
+                )
+            post_records: list[PostRead] = db.get_all(PostTable, filters=filters)
+            for post in post_records:
+                filters = [
+                    Filter(attribute="post_id", value=post.id, operator=Operator.EQ),
+                    Filter(
+                        attribute="language",
+                        value=filter.language,
+                        operator=Operator.EQ,
+                    ),
+                ]
+                post_translation_records: list[PostTranslationRead] = db.get_all(
+                    PostTranslationTable, filters=filters
+                )
+
+                posts.append(
+                    PostOut(
+                        id=post.id,
+                        mosque_id=post.mosque_id,
+                        content_type=post.content_type,
+                        created_at=post.created_at,
+                        updated_at=post.updated_at,
+                        valid_to=post.valid_to,
+                        translations=post_translation_records,
+                    )
+                )
+            return PaginationBuilder.build(
+                items=posts, total=len(posts), size=filter.size, page=filter.page
+            )
+
+    def create(
+        self,
+        post_create: PostCreate,
+    ) -> PostRead:
+        with self.__db_repository_provider.get_database_repository() as db:
+            post_record = db.create(
+                PostTable(
+                    mosque_id=post_create.mosque_id,
+                    content_type=post_create.content_type,
+                    valid_to=post_create.valid_to,
+                )
+            )
+
+            return post_record
+
+    def create_post_translation(
+        self,
+        post_id: UUID,
+        post_translation_in: PostTranslationIn,
+        description: str | None,
+        storage_dir_path: str | None = None,
+    ) -> PostTranslationRead:
+        with self.__db_repository_provider.get_database_repository() as db:
+            post_translation_record = db.create(
+                PostTranslationTable(
+                    post_id=post_id,
+                    title=post_translation_in.title,
+                    description=description,
+                    language=post_translation_in.language,
+                    media=storage_dir_path,
+                )
+            )
+
+            return post_translation_record
