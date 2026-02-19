@@ -29,5 +29,5 @@ class DirectoryQuery(BaseModel):
     mosque_id: UUID = Query(..., description="The ID of the mosque")
     dir: str = Field(..., description="The directory path containing media files")
     media_category: DirectoryEnum = Field(
-        ..., description="The category of media files (e.g., events, prayer_times)"
+        ..., description="The category of media files (e.g., posts, prayer_times)"
     )

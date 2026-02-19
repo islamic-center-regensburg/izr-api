@@ -1,0 +1,2 @@
+class PostTranslationAlreadyExists(Exception):
+    pass

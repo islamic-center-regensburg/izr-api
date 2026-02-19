@@ -1,2 +1,0 @@
-class EventTranslationAlreadyExists(Exception):
-    pass
