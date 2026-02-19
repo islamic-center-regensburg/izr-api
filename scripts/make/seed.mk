@@ -14,7 +14,7 @@ db-reset:
 	docker volume rm -f izr-api_db_data || true
 
 	@echo "Starting database container..."
-	make up db
+	make up
 
 reseed:
 	@echo "Stopping database container..."

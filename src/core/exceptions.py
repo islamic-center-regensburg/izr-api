@@ -12,7 +12,7 @@ from pydantic_core import ValidationError as CoreValidationError
 
 from src.core.db.database_repository import DoesNotExistInDatabaseException
 from src.core.logging.logger import logger
-from src.features.event.exception import EventTranslationAlreadyExists
+from src.features.post.exception import PostTranslationAlreadyExists
 from src.features.media.exception import DeleteMediaException, GetMediaException
 
 P = ParamSpec("P")
@@ -43,7 +43,7 @@ EXCEPTION_MAPPINGS = [
     (DoesNotExistInDatabaseException, 404, "warning", "Database error"),
     (GetMediaException, 400, "warning", "Media error"),
     (DeleteMediaException, 400, "warning", "Media error"),
-    (EventTranslationAlreadyExists, 400, "error", "Event translation error"),
+    (PostTranslationAlreadyExists, 400, "error", "Post translation error"),
 ]
 
 

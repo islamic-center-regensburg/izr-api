@@ -1,66 +1,66 @@
 from uuid import UUID
 from venv import logger
-from src.features.event.exception import EventTranslationAlreadyExists
-from src.features.event.schemas import (
-    EventCreate,
-    EventFilter,
-    EventPaginationFilter,
-    EventTranslationIn,
+from src.features.post.exception import PostTranslationAlreadyExists
+from src.features.post.schemas import (
+    PostCreate,
+    PostFilter,
+    PostPaginationFilter,
+    PostTranslationIn,
 )
-from src.features.event.operation import EventOperation
+from src.features.post.operation import PostOperation
 from src.features.mosque.operation import MosqueOperation
 from src.integrations.minio.helpers import generate_random_filename
 from src.integrations.minio.repository import MinioStorageProvider
 
 
-class EventComponent:
+class PostComponent:
     def __init__(
         self,
-        event_operation: EventOperation,
+        post_operation: PostOperation,
         mosque_operation: MosqueOperation,
     ):
-        self.__event_operation = event_operation
+        self.__post_operation = post_operation
         self.mosque_operation = mosque_operation
 
-    def get_event(self, event_id: UUID, filter: EventFilter):
-        return self.__event_operation.get_event_by_id(event_id, filter)
+    def get_post(self, post_id: UUID, filter: PostFilter):
+        return self.__post_operation.get_post_by_id(post_id, filter)
 
-    def get_all_events(self, mosque_id: UUID, filter: EventPaginationFilter):
-        return self.__event_operation.get_all_events(mosque_id, filter)
+    def get_all_posts(self, mosque_id: UUID, filter: PostPaginationFilter):
+        return self.__post_operation.get_all_posts(mosque_id, filter)
 
-    def create_event(
+    def create_post(
         self,
-        event_create: EventCreate,
+        post_create: PostCreate,
     ):
-        return self.__event_operation.create(event_create)
+        return self.__post_operation.create(post_create)
 
-    def create_event_translation(
+    def create_post_translation(
         self,
         mosque_id: UUID,
-        event_id: UUID,
-        event_translation_in: EventTranslationIn,
+        post_id: UUID,
+        post_translation_in: PostTranslationIn,
         description: str | None,
         minio_provider: MinioStorageProvider,
     ):
-        event = self.__event_operation.get_event_by_id(
-            event_id, EventFilter(language=event_translation_in.language)
+        post = self.__post_operation.get_post_by_id(
+            post_id, PostFilter(language=post_translation_in.language)
         )
 
-        if len(event.translations):
-            msg = f"Translation for event {event_id} in language '{event_translation_in.language}' already exists."
-            raise EventTranslationAlreadyExists(msg)
+        if len(post.translations):
+            msg = f"Translation for post {post_id} in language '{post_translation_in.language}' already exists."
+            raise PostTranslationAlreadyExists(msg)
 
         mosque = self.mosque_operation.get_mosque_by_id(mosque_id)
 
-        db_dir_path = f"events/event_{event_id}/{event_translation_in.language}"
+        db_dir_path = f"posts/post_{post_id}/{post_translation_in.language}"
         minio_dir_path = (
-            f"{mosque.id}/events/event_{event_id}/{event_translation_in.language}"
+            f"{mosque.id}/posts/post_{post_id}/{post_translation_in.language}"
         )
         files_uploaded = []
 
-        if event_translation_in.media:
+        if post_translation_in.media:
             try:
-                for media_file in event_translation_in.media:
+                for media_file in post_translation_in.media:
                     file = media_file.file.read()
                     file_name = media_file.filename
                     stored_file_name = generate_random_filename(
@@ -81,6 +81,6 @@ class EventComponent:
                         )
                 raise e
 
-        return self.__event_operation.create_event_translation(
-            event_id, event_translation_in, description, db_dir_path
+        return self.__post_operation.create_post_translation(
+            post_id, post_translation_in, description, db_dir_path
         )

@@ -3,11 +3,8 @@ from dotenv import load_dotenv
 from sqlalchemy import MetaData
 from sqlmodel import SQLModel
 
-from src.features.event.schemas import (
-    EventTable,
-    EventTranslationTable,
-)
 from src.features.mosque.schemas import MosqueTable
+from src.features.post.schemas import PostTable, PostTranslationTable
 from src.features.prayer_config.schemas import PrayerConfigurationTable
 from src.features.prayer_iqama.schemas import PrayerIqamaTable
 from src.features.prayer_times.schemas import PrayerTimesTable
@@ -29,8 +26,8 @@ class DatabaseMigration:
             PrayerTimesTable,
             PrayerTimeUploadTable,
             PrayerIqamaTable,
-            EventTable,
-            EventTranslationTable,
+            PostTable,
+            PostTranslationTable,
         }:
             model()
         return SQLModel.metadata

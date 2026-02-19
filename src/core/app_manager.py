@@ -27,7 +27,7 @@ from src.features.prayer_times_upload.router import (
     get_router as prayer_times_upload_router,
 )
 from src.features.media.router import get_router as media_router
-from src.features.event.router import get_router as event_router
+from src.features.post.router import get_router as post_router
 
 
 class CORSSettings(BaseSettings):
@@ -113,7 +113,7 @@ class AppManager:
             prayer_times_upload_router(self.__database_repository_provider),
             prayer_iqama_router(self.__database_repository_provider),
             media_router(),
-            event_router(self.__database_repository_provider),
+            post_router(self.__database_repository_provider),
         ]:
             self.__app.include_router(router)
 
