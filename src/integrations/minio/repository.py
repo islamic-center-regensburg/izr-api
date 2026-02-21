@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import mimetypes
 from datetime import timedelta
 from typing import BinaryIO
 
@@ -52,6 +53,10 @@ class MinioStorageProvider:
         name = name.lstrip("/")
         return f"{prefix}/{name}" if prefix else name
 
+    def _guess_content_type(self, filename: str) -> str:
+        guessed, _ = mimetypes.guess_type(filename)
+        return guessed or "application/octet-stream"
+
     def list_objects(self, prefix: str = "") -> list[str]:
         full_prefix = self._object_key(prefix)
         objects = self._client.list_objects(
@@ -84,17 +89,18 @@ class MinioStorageProvider:
         *,
         filename: str,
         data: bytes,
-        content_type: str = "application/octet-stream",
+        content_type: str | None = None,
     ) -> None:
         import io
 
         self.ensure_bucket()
+        resolved_content_type = content_type or self._guess_content_type(filename)
         self._client.put_object(
             bucket_name=self.bucket,
             object_name=self._object_key(filename),
             data=io.BytesIO(data),
             length=len(data),
-            content_type=content_type,
+            content_type=resolved_content_type,
         )
 
     def upload_fileobj(
@@ -103,15 +109,16 @@ class MinioStorageProvider:
         filename: str,
         fileobj: BinaryIO,
         length: int,
-        content_type: str = "application/octet-stream",
+        content_type: str | None = None,
     ) -> None:
         self.ensure_bucket()
+        resolved_content_type = content_type or self._guess_content_type(filename)
         self._client.put_object(
             bucket_name=self.bucket,
             object_name=self._object_key(filename),
             data=fileobj,
             length=length,
-            content_type=content_type,
+            content_type=resolved_content_type,
         )
 
     def presigned_get_url(
@@ -119,7 +126,6 @@ class MinioStorageProvider:
         *,
         filename: str,
         expires: int = 3600,
-        content_type: str | None = None,
         inline: bool = True,
     ) -> str:
         response_headers: dict[str, str] = {}
@@ -129,10 +135,6 @@ class MinioStorageProvider:
             response_headers["response-content-disposition"] = "inline"
             # If you want to preserve the filename in the Save dialog, you can do:
             # response_headers["response-content-disposition"] = f'inline; filename="{filename}"'
-
-        # Set the correct mime type (image/png, video/mp4, etc.)
-        if content_type:
-            response_headers["response-content-type"] = content_type
 
         return self._client.presigned_get_object(
             bucket_name=self.bucket,
