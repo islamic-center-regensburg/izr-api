@@ -3,13 +3,17 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 from uuid import UUID, uuid4
-from fastapi import File, Form, UploadFile
+from fastapi import File, UploadFile
 from pydantic import BaseModel
 from sqlmodel import SQLModel, Field
 
 from src.core.db.pagination import PageParams, PaginatedResponse
-from src.features.media.schemas import MediaOut
 from src.features.post.enums import PostContentType, SupportedLanguages
+
+
+class MediaOut(SQLModel):
+    object: str
+    url: str
 
 
 class PostBase(SQLModel):
@@ -62,6 +66,7 @@ class PostPaginationFilter(PostFilter, PageParams):
 
 
 class PostTranslationBase(SQLModel):
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
     title: str | None = Field(None, description="Title of the post")
     description: str | None = Field(None, description="Description of the post")
     language: SupportedLanguages = Field(
@@ -77,19 +82,25 @@ class PostTranslationOut(PostTranslationBase):
 
 
 class PostTranslationIn(SQLModel):
-    title: str | None = Form(None, description="Title of the post")
-    language: SupportedLanguages = Form(
+    title: str | None = Field(None, description="Title of the post")
+    language: SupportedLanguages = Field(
         ..., description="Language of the post translation"
     )
-    media: list[UploadFile] | None = File(
-        None, description="List of media files associated with the post translation"
+
+
+class PostTranslationMediaIn(SQLModel):
+    media: list[UploadFile] = File(
+        ..., description="List of media files associated with the post translation"
     )
+
+
+class PostTranslationUpdate(PostTranslationIn):
+    pass
 
 
 class PostTranslationTable(PostTranslationBase, table=True):
     __tablename__ = "post_translations"
 
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
     post_id: UUID = Field(
         ..., foreign_key="posts.id", description="ID of the associated post"
     )

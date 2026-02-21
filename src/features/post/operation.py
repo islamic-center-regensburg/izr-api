@@ -1,4 +1,5 @@
 from uuid import UUID
+from src.core.db.database_repository import DoesNotExistInDatabaseException
 from src.core.db.database_repository_provider import DatabaseRepositoryProvider
 
 from src.core.db.filters import Filter, Operator
@@ -105,6 +106,10 @@ class PostOperation:
 
             return post_record
 
+    def delete_post(self, post_id: UUID) -> None:
+        with self.__db_repository_provider.get_database_repository() as db:
+            db.delete(PostTable, post_id)
+
 
 class PostTranslationOperation:
     def __init__(self, db_repository_provider: DatabaseRepositoryProvider):
@@ -143,3 +148,62 @@ class PostTranslationOperation:
                     media=storage_dir_path,
                 )
             )
+
+    def get_post_translation_by_id(
+        self,
+        translation_id: UUID,
+    ) -> PostTranslationRead:
+        with self.__db_repository_provider.get_database_repository() as db:
+            return db.get_by_id(PostTranslationTable, translation_id)
+
+    def update_post_translation(
+        self,
+        post_id: UUID,
+        translation_id: UUID,
+        post_translation_in: PostTranslationIn,
+    ) -> PostTranslationRead:
+        with self.__db_repository_provider.get_database_repository() as db:
+            post_translation = db.get_by_id(PostTranslationTable, translation_id)
+            if post_translation.post_id != post_id:
+                raise DoesNotExistInDatabaseException(
+                    "Post translation does not belong to the given post"
+                )
+
+            for key, value in post_translation_in.model_dump(
+                exclude_unset=True
+            ).items():
+                setattr(post_translation, key, value)
+
+            return db.update(post_translation)
+
+    def delete_post_translation(
+        self,
+        post_id: UUID,
+        translation_id: UUID,
+    ) -> None:
+        with self.__db_repository_provider.get_database_repository() as db:
+            post_translation = db.get_by_id(PostTranslationTable, translation_id)
+            if post_translation.post_id != post_id:
+                raise DoesNotExistInDatabaseException(
+                    "Post translation does not belong to the given post"
+                )
+            db.delete(PostTranslationTable, translation_id)
+
+    def clear_post_translation_media(
+        self,
+        translation_id: UUID,
+    ) -> PostTranslationRead:
+        with self.__db_repository_provider.get_database_repository() as db:
+            post_translation = db.get_by_id(PostTranslationTable, translation_id)
+            post_translation.media = None
+            return db.update(post_translation)
+
+    def set_post_translation_media(
+        self,
+        translation_id: UUID,
+        storage_dir_path: str,
+    ) -> PostTranslationRead:
+        with self.__db_repository_provider.get_database_repository() as db:
+            post_translation = db.get_by_id(PostTranslationTable, translation_id)
+            post_translation.media = storage_dir_path
+            return db.update(post_translation)

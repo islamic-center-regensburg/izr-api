@@ -51,6 +51,8 @@ class MinioStorageProvider:
         # `name` can be a filename or a relative path like "mosque-1/2026.csv"
         prefix = self._prefix()
         name = name.lstrip("/")
+        if prefix and (name == prefix or name.startswith(f"{prefix}/")):
+            return name
         return f"{prefix}/{name}" if prefix else name
 
     def _guess_content_type(self, filename: str) -> str:

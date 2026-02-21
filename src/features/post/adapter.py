@@ -4,8 +4,7 @@ from typing import Any, Callable
 from uuid import UUID
 
 from src.core.db.pagination import PaginationBuilder
-from src.features.media.schemas import MediaOut
-from src.features.post.schemas import PostListOut
+from src.features.post.schemas import MediaOut, PostListOut
 from src.features.post.schemas import PostOut, PostTranslationOut
 
 

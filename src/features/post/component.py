@@ -1,17 +1,22 @@
 from uuid import UUID
 from venv import logger
-from src.features.media.exception import DeleteMediaException, GetMediaException
-from src.features.media.schemas import MediaOut
 from src.features.post.adapter import PostAdapter
 from src.features.post.enums import AllowedMediaType
-from src.features.post.exception import PostTranslationAlreadyExists
+from src.features.post.exception import (
+    DeleteMediaException,
+    GetMediaException,
+    PostTranslationAlreadyExists,
+)
 from src.features.post.schemas import (
+    MediaOut,
     PostCreate,
     PostFilter,
     PostListOut,
     PostOut,
     PostPaginationFilter,
     PostTranslationIn,
+    PostTranslationMediaIn,
+    PostTranslationRead,
 )
 from src.features.post.operation import PostOperation, PostTranslationOperation
 from src.features.mosque.operation import MosqueOperation
@@ -79,13 +84,111 @@ class PostComponent:
     ):
         return self.__post_operation.create(post_create)
 
-    async def create_post_translation(
+    def update_post_translation(
         self,
-        mosque_id: UUID,
         post_id: UUID,
+        translation_id: UUID,
         post_translation_in: PostTranslationIn,
         description: str | None,
+    ) -> PostTranslationRead:
+        post_translation_in.description = description
+        return self.__post_translation_operation.update_post_translation(
+            post_id,
+            translation_id,
+            post_translation_in,
+        )
+
+    def delete_post_translation(
+        self,
+        post_id: UUID,
+        translation_id: UUID,
         minio_provider: MinioStorageProvider,
+    ) -> bool:
+        post = self.__post_operation.get_post_by_id(post_id, PostFilter())
+        post_translation = self.__post_translation_operation.get_post_translation_by_id(
+            translation_id
+        )
+
+        if post_translation.media:
+            self.__delete_all_media_in_directory(
+                mosque_id=post.mosque_id,
+                dir=post_translation.media,
+                minio_provider=minio_provider,
+            )
+
+        self.__post_translation_operation.delete_post_translation(
+            post_id,
+            translation_id,
+        )
+        return True
+
+    def delete_post_media(
+        self,
+        translation_id: UUID,
+        file_path: str | None,
+        minio_provider: MinioStorageProvider,
+    ) -> PostTranslationRead:
+        post_translation = self.__post_translation_operation.get_post_translation_by_id(
+            translation_id
+        )
+
+        if post_translation.media:
+            post = self.__post_operation.get_post_by_id(
+                post_translation.post_id, PostFilter()
+            )
+        dir_to_delete = (
+            file_path if file_path else f"{post.mosque_id}/{post_translation.media}"
+        )
+        self.__delete_all_media_in_directory(
+            dir=dir_to_delete,
+            minio_provider=minio_provider,
+        )
+
+        remaining_files = self.__get_all_media_in_directory(
+            mosque_id=post.mosque_id,
+            dir=post_translation.media,
+            minio_provider=minio_provider,
+        )
+
+        if not file_path and len(remaining_files) == 0:
+            return self.__post_translation_operation.clear_post_translation_media(
+                translation_id,
+            )
+        return self.__post_translation_operation.get_post_translation_by_id(
+            translation_id,
+        )
+
+    def delete_post(
+        self,
+        post_id: UUID,
+        minio_provider: MinioStorageProvider,
+    ) -> bool:
+        post = self.__post_operation.get_post_by_id(post_id, PostFilter())
+        post_translations = self.__post_translation_operation.get_post_translations(
+            post_id,
+            None,
+        )
+
+        for post_translation in post_translations:
+            if post_translation.media:
+                self.__delete_all_media_in_directory(
+                    mosque_id=post.mosque_id,
+                    dir=post_translation.media,
+                    minio_provider=minio_provider,
+                )
+            self.__post_translation_operation.delete_post_translation(
+                post_id,
+                post_translation.id,
+            )
+
+        self.__post_operation.delete_post(post_id)
+        return True
+
+    def create_post_translation(
+        self,
+        post_id: UUID,
+        post_translation_in: PostTranslationIn,
+        post_translation_description: str | None = None,
     ):
         post = self.__post_operation.get_post_by_id(
             post_id, PostFilter(language=post_translation_in.language)
@@ -100,43 +203,67 @@ class PostComponent:
             msg = f"Translation for post {post_id} in language '{post_translation_in.language}' already exists."
             raise PostTranslationAlreadyExists(msg)
 
-        mosque = self.mosque_operation.get_mosque_by_id(mosque_id)
-
-        db_dir_path = f"posts/post_{post_id}/{post_translation_in.language}"
-        minio_dir_path = (
-            f"{mosque.id}/posts/post_{post_id}/{post_translation_in.language}"
-        )
-        files_uploaded = []
-
-        if post_translation_in.media:
-            await validate_upload_type(
-                files=post_translation_in.media,
-                allowed=AllowedMediaType,
-            )
-            try:
-                for media_file in post_translation_in.media:
-                    file = media_file.file.read()
-                    file_name = media_file.filename
-                    stored_file_name = generate_random_filename(
-                        original_filename=file_name
-                    )
-                    minio_provider.upload_bytes(
-                        filename=f"{minio_dir_path}/{stored_file_name}", data=file
-                    )
-                    files_uploaded.append(f"{minio_dir_path}/{stored_file_name}")
-            except Exception as e:
-                logger.error(f"Error uploading files to Minio: {e}")
-                for file_path in files_uploaded:
-                    try:
-                        minio_provider.delete(file_path)
-                    except Exception as delete_error:
-                        logger.error(
-                            f"Error deleting file {file_path} from Minio: {delete_error}"
-                        )
-                raise e
-
         return self.__post_translation_operation.create_post_translation(
-            post_id, post_translation_in, description, db_dir_path
+            post_id,
+            post_translation_in,
+            description=post_translation_description,
+        )
+
+    async def upload_post_media(
+        self,
+        translation_id: UUID,
+        media_in: PostTranslationMediaIn,
+        minio_provider: MinioStorageProvider,
+    ) -> PostTranslationRead:
+        post_translation = self.__post_translation_operation.get_post_translation_by_id(
+            translation_id
+        )
+        post = self.__post_operation.get_post_by_id(
+            post_translation.post_id,
+            PostFilter(),
+        )
+
+        db_dir_path = (
+            f"posts/post_{post_translation.post_id}/{post_translation.language}"
+        )
+        minio_dir_path = f"{post.mosque_id}/{db_dir_path}"
+
+        await validate_upload_type(
+            files=media_in.media,
+            allowed=AllowedMediaType,
+        )
+
+        if post_translation.media:
+            self.__delete_all_media_in_directory(
+                mosque_id=post.mosque_id,
+                dir=post_translation.media,
+                minio_provider=minio_provider,
+            )
+
+        files_uploaded = []
+        try:
+            for media_file in media_in.media:
+                file = media_file.file.read()
+                stored_file_name = generate_random_filename(
+                    original_filename=media_file.filename
+                )
+                object_key = f"{minio_dir_path}/{stored_file_name}"
+                minio_provider.upload_bytes(filename=object_key, data=file)
+                files_uploaded.append(object_key)
+        except Exception as e:
+            logger.error(f"Error uploading files to Minio: {e}")
+            for file_path in files_uploaded:
+                try:
+                    minio_provider.delete(file_path)
+                except Exception as delete_error:
+                    logger.error(
+                        f"Error deleting file {file_path} from Minio: {delete_error}"
+                    )
+            raise e
+
+        return self.__post_translation_operation.set_post_translation_media(
+            translation_id,
+            db_dir_path,
         )
 
     def __get_all_media_in_directory(
@@ -153,7 +280,7 @@ class PostComponent:
             try:
                 url = minio_provider.presigned_get_url(filename=obj)
                 media_list.append(
-                    MediaOut(object="/".join(obj.split("/")[2:]), url=url)
+                    MediaOut(object="/".join(obj.split("/")[1:]), url=url)
                 )
             except Exception as e:
                 raise GetMediaException(f"Failed to get media: {str(e)}") from e
@@ -162,12 +289,10 @@ class PostComponent:
 
     def __delete_all_media_in_directory(
         self,
-        mosque_id: UUID,
         dir: str,
         minio_provider: MinioStorageProvider,
     ) -> None:
-        path = f"{mosque_id}/{dir}"
-        objects = minio_provider.list_objects(prefix=path)
+        objects = minio_provider.list_objects(prefix=dir)
         for obj in objects:
             try:
                 minio_provider.delete(obj)

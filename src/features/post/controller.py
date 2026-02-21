@@ -1,5 +1,5 @@
 from uuid import UUID
-from fastapi import APIRouter, Body, Depends
+from fastapi import APIRouter, Body, Depends, Query
 
 from src.core.exceptions import guard
 from src.core.router.router_builder import EndpointType, RouterBuilder
@@ -12,6 +12,7 @@ from src.features.post.schemas import (
     PostPaginationFilter,
     PostRead,
     PostTranslationIn,
+    PostTranslationMediaIn,
     PostTranslationRead,
 )
 from src.features.post.storage import get_minio_repository
@@ -54,6 +55,41 @@ class PostController:
             response_model=PostTranslationRead,
             summary="Create post translation",
         )
+        router_builder.add_method(
+            "/{post_id}/translations/{translation_id}",
+            endpoint_type=EndpointType.UPDATE,
+            endpoint=self.__update_translation_for_post,
+            response_model=PostTranslationRead,
+            summary="Update post translation",
+        )
+        router_builder.add_method(
+            "/{post_id}/translations/{translation_id}",
+            endpoint_type=EndpointType.DELETE,
+            endpoint=self.__delete_translation_for_post,
+            response_model=bool,
+            summary="Delete post translation",
+        )
+        router_builder.add_method(
+            "/media/{translation_id}",
+            endpoint_type=EndpointType.CREATE,
+            endpoint=self.__upload_post_media,
+            response_model=PostTranslationRead,
+            summary="Upload post translation media",
+        )
+        router_builder.add_method(
+            "/media/{translation_id}",
+            endpoint_type=EndpointType.DELETE,
+            endpoint=self.__delete_post_media,
+            response_model=PostTranslationRead,
+            summary="Delete post translation media",
+        )
+        router_builder.add_method(
+            "/{post_id}",
+            endpoint_type=EndpointType.DELETE,
+            endpoint=self.__delete_post,
+            response_model=bool,
+            summary="Delete post",
+        )
 
         return router_builder.get_router()
 
@@ -91,18 +127,84 @@ class PostController:
     @guard
     async def __create_translation_for_post(
         self,
-        mosque_id: UUID,
         post_id: UUID,
         post_translation_in: PostTranslationIn = Depends(),
         description: str | None = Body(
             None, description="Description of the post translation"
         ),
-        minio_repository_provider: MinioStorageProvider = Depends(get_minio_repository),
     ) -> PostTranslationRead:
-        return await self.__post_component.create_post_translation(
-            mosque_id,
+        return self.__post_component.create_post_translation(
             post_id,
             post_translation_in,
             description,
+        )
+
+    @guard
+    async def __upload_post_media(
+        self,
+        translation_id: UUID,
+        post_translation_media_in: PostTranslationMediaIn = Depends(),
+        minio_repository_provider: MinioStorageProvider = Depends(get_minio_repository),
+    ) -> PostTranslationRead:
+        return await self.__post_component.upload_post_media(
+            translation_id,
+            post_translation_media_in,
+            minio_repository_provider,
+        )
+
+    @guard
+    def __update_translation_for_post(
+        self,
+        post_id: UUID,
+        translation_id: UUID,
+        post_translation_in: PostTranslationIn = Depends(),
+        description: str | None = Body(
+            None, description="Description of the post translation"
+        ),
+    ) -> PostTranslationRead:
+        return self.__post_component.update_post_translation(
+            post_id,
+            translation_id,
+            post_translation_in,
+            description,
+        )
+
+    @guard
+    def __delete_translation_for_post(
+        self,
+        post_id: UUID,
+        translation_id: UUID,
+        minio_repository_provider: MinioStorageProvider = Depends(get_minio_repository),
+    ) -> bool:
+        return self.__post_component.delete_post_translation(
+            post_id,
+            translation_id,
+            minio_repository_provider,
+        )
+
+    @guard
+    def __delete_post_media(
+        self,
+        translation_id: UUID,
+        file_path: str | None = Query(
+            None,
+            description="Optional file path to delete from translation media directory",
+        ),
+        minio_repository_provider: MinioStorageProvider = Depends(get_minio_repository),
+    ) -> PostTranslationRead:
+        return self.__post_component.delete_post_media(
+            translation_id,
+            file_path,
+            minio_repository_provider,
+        )
+
+    @guard
+    def __delete_post(
+        self,
+        post_id: UUID,
+        minio_repository_provider: MinioStorageProvider = Depends(get_minio_repository),
+    ) -> bool:
+        return self.__post_component.delete_post(
+            post_id,
             minio_repository_provider,
         )
