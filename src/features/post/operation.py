@@ -6,9 +6,6 @@ from src.core.db.pagination import PaginationBuilder
 from src.features.post.schemas import (
     PostPaginationFilter,
     PostRead,
-    PostTranslationIn,
-    PostTranslationRead,
-    PostTranslationTable,
 )
 from src.features.post.schemas import (
     PostFilter,
@@ -16,6 +13,10 @@ from src.features.post.schemas import (
     PostListOut,
     PostOut,
     PostTable,
+    PostTranslationIn,
+    PostTranslationRead,
+    PostTranslationTable,
+    SupportedLanguages,
 )
 
 
@@ -42,16 +43,6 @@ class PostOperation:
             post_records: list[PostRead] = db.get_all(PostTable, filters=filters)
             post = post_records[0]
 
-            filters = [
-                Filter(attribute="post_id", value=post.id, operator=Operator.EQ),
-                Filter(
-                    attribute="language", value=filter.language, operator=Operator.EQ
-                ),
-            ]
-            post_translation_records: list[PostTranslationRead] = db.get_all(
-                PostTranslationTable, filters=filters
-            )
-
             return PostOut(
                 id=post.id,
                 mosque_id=post.mosque_id,
@@ -59,7 +50,7 @@ class PostOperation:
                 created_at=post.created_at,
                 updated_at=post.updated_at,
                 valid_to=post.valid_to,
-                translations=post_translation_records,
+                translations=[],
             )
 
     def get_all_posts(
@@ -84,18 +75,6 @@ class PostOperation:
                 )
             post_records: list[PostRead] = db.get_all(PostTable, filters=filters)
             for post in post_records:
-                filters = [
-                    Filter(attribute="post_id", value=post.id, operator=Operator.EQ),
-                    Filter(
-                        attribute="language",
-                        value=filter.language,
-                        operator=Operator.EQ,
-                    ),
-                ]
-                post_translation_records: list[PostTranslationRead] = db.get_all(
-                    PostTranslationTable, filters=filters
-                )
-
                 posts.append(
                     PostOut(
                         id=post.id,
@@ -104,7 +83,7 @@ class PostOperation:
                         created_at=post.created_at,
                         updated_at=post.updated_at,
                         valid_to=post.valid_to,
-                        translations=post_translation_records,
+                        translations=[],
                     )
                 )
             return PaginationBuilder.build(
@@ -126,6 +105,27 @@ class PostOperation:
 
             return post_record
 
+
+class PostTranslationOperation:
+    def __init__(self, db_repository_provider: DatabaseRepositoryProvider):
+        self.__db_repository_provider = db_repository_provider
+
+    def get_post_translations(
+        self,
+        post_id: UUID,
+        language: SupportedLanguages | None,
+    ) -> list[PostTranslationRead]:
+        with self.__db_repository_provider.get_database_repository() as db:
+            filters = [
+                Filter(attribute="post_id", value=post_id, operator=Operator.EQ),
+                Filter(
+                    attribute="language",
+                    value=language,
+                    operator=Operator.EQ,
+                ),
+            ]
+            return db.get_all(PostTranslationTable, filters=filters)
+
     def create_post_translation(
         self,
         post_id: UUID,
@@ -134,7 +134,7 @@ class PostOperation:
         storage_dir_path: str | None = None,
     ) -> PostTranslationRead:
         with self.__db_repository_provider.get_database_repository() as db:
-            post_translation_record = db.create(
+            return db.create(
                 PostTranslationTable(
                     post_id=post_id,
                     title=post_translation_in.title,
@@ -143,5 +143,3 @@ class PostOperation:
                     media=storage_dir_path,
                 )
             )
-
-            return post_translation_record

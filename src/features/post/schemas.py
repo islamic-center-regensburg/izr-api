@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from sqlmodel import SQLModel, Field
 
 from src.core.db.pagination import PageParams, PaginatedResponse
+from src.features.media.schemas import MediaOut
 from src.features.post.enums import PostContentType, SupportedLanguages
 
 
@@ -66,12 +67,12 @@ class PostTranslationBase(SQLModel):
     language: SupportedLanguages = Field(
         ..., description="Language of the post translation"
     )
-    media: str | None = Field(
-        None, description="Object key that points to S3 Object Directory"
+
+
+class PostTranslationOut(PostTranslationBase):
+    media: list[MediaOut] | None = Field(
+        None, description="Media Urls with Object keys"
     )
-
-
-class PostTranslationRead(PostTranslationBase):
     pass
 
 
@@ -92,6 +93,13 @@ class PostTranslationTable(PostTranslationBase, table=True):
     post_id: UUID = Field(
         ..., foreign_key="posts.id", description="ID of the associated post"
     )
+    media: str | None = Field(
+        None, description="Object key that points to S3 Object Directory"
+    )
+
+
+class PostTranslationRead(PostTranslationTable):
+    pass
 
 
 class PostOut(SQLModel):
@@ -101,7 +109,7 @@ class PostOut(SQLModel):
     created_at: datetime
     updated_at: datetime
     valid_to: datetime
-    translations: list[PostTranslationRead]
+    translations: list[PostTranslationOut]
 
 
 PostListOut = PaginatedResponse[PostOut]

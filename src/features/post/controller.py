@@ -58,14 +58,26 @@ class PostController:
         return router_builder.get_router()
 
     @guard
-    def __get_post(self, post_id: UUID, filter: PostFilter = Depends()) -> PostOut:
-        return self.__post_component.get_post(post_id, filter)
+    def __get_post(
+        self,
+        post_id: UUID,
+        filter: PostFilter = Depends(),
+        minio_repository_provider: MinioStorageProvider = Depends(get_minio_repository),
+    ) -> PostOut:
+        return self.__post_component.get_post(
+            post_id, filter, minio_repository_provider
+        )
 
     @guard
     def __get_all_posts(
-        self, mosque_id: UUID, filters: PostPaginationFilter = Depends()
+        self,
+        mosque_id: UUID,
+        filters: PostPaginationFilter = Depends(),
+        minio_repository_provider: MinioStorageProvider = Depends(get_minio_repository),
     ) -> PostListOut:
-        return self.__post_component.get_all_posts(mosque_id, filters)
+        return self.__post_component.get_all_posts(
+            mosque_id, filters, minio_repository_provider
+        )
 
     @guard
     def __create_post(
@@ -77,7 +89,7 @@ class PostController:
         )
 
     @guard
-    def __create_translation_for_post(
+    async def __create_translation_for_post(
         self,
         mosque_id: UUID,
         post_id: UUID,
@@ -87,7 +99,7 @@ class PostController:
         ),
         minio_repository_provider: MinioStorageProvider = Depends(get_minio_repository),
     ) -> PostTranslationRead:
-        return self.__post_component.create_post_translation(
+        return await self.__post_component.create_post_translation(
             mosque_id,
             post_id,
             post_translation_in,
