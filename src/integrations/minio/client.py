@@ -1,16 +1,43 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+
 from minio import Minio
 
-from src.integrations.minio.settings import MinioSettings
+
+@dataclass(frozen=True, slots=True)
+class MinioClientConfig:
+    endpoint: str
+    access_key: str
+    secret_key: str
+    secure: bool
 
 
 class MinioClientFactory:
-    def __init__(self, settings: MinioSettings) -> None:
-        self._settings = settings
+    """
+    Builds two MinIO clients:
+      - private: for internal Docker network traffic (e.g. endpoint "minio:9000", secure=False)
+      - public:  for generating presigned URLs with the real domain (e.g. "s3.iz-regensburg.de", secure=True)
+    """
 
-    def create(self) -> Minio:
+    def __init__(
+        self, *, private: MinioClientConfig, public: MinioClientConfig
+    ) -> None:
+        self._private = private
+        self._public = public
+
+    def create_private(self) -> Minio:
         return Minio(
-            endpoint=self._settings.endpoint,
-            access_key=self._settings.access_key,
-            secret_key=self._settings.secret_key,
-            secure=self._settings.secure,
+            endpoint=self._private.endpoint,
+            access_key=self._private.access_key,
+            secret_key=self._private.secret_key,
+            secure=self._private.secure,
+        )
+
+    def create_public(self) -> Minio:
+        return Minio(
+            endpoint=self._public.endpoint,
+            access_key=self._public.access_key,
+            secret_key=self._public.secret_key,
+            secure=self._public.secure,
         )

@@ -8,12 +8,15 @@ from src.integrations.prayer_times_parser.repository import PrayerTimesParserPro
 
 def get_minio_repository() -> Generator[MinioStorageProvider, None, None]:
     settings = get_minio_settings()
-    client = MinioClientFactory(settings).create()
-    repo = MinioStorageProvider(client, settings, directory=DirectoryEnum.PRAYER_TIMES)
-    try:
-        yield repo
-    finally:
-        pass
+    clients = MinioClientFactory(settings).create()
+
+    repo = MinioStorageProvider(
+        private_client=clients.private,
+        public_client=clients.public,
+        settings=settings,
+        directory=DirectoryEnum.PRAYER_TIMES,
+    )
+    yield repo
 
 
 def get_prayer_times_parser_repository() -> (

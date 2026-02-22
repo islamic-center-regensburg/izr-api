@@ -12,13 +12,22 @@ from .settings import MinioSettings
 
 
 class MinioStorageProvider:
+    """
+    Uses:
+      - private client for all S3 operations (upload/list/delete/ensure_bucket)
+      - public client ONLY for presigned URL generation (so URLs use the public domain)
+    """
+
     def __init__(
         self,
-        client: Minio,
+        *,
+        private_client: Minio,
+        public_client: Minio,
         settings: MinioSettings,
         directory: DirectoryEnum | None = None,
     ) -> None:
-        self._client = client
+        self._private_client = private_client
+        self._public_client = public_client
         self._settings = settings
         self._directory = directory
 
@@ -44,11 +53,9 @@ class MinioStorageProvider:
                 raise ValueError(f"Unsupported directory enum: {dir_enum!r}")
 
     def _prefix(self) -> str:
-        # keep it consistent and safe
         return self.directory.strip("/")
 
     def _object_key(self, name: str) -> str:
-        # `name` can be a filename or a relative path like "mosque-1/2026.csv"
         prefix = self._prefix()
         name = name.lstrip("/")
         if prefix and (name == prefix or name.startswith(f"{prefix}/")):
@@ -61,15 +68,15 @@ class MinioStorageProvider:
 
     def list_objects(self, prefix: str = "") -> list[str]:
         full_prefix = self._object_key(prefix)
-        objects = self._client.list_objects(
+        objects = self._private_client.list_objects(
             self.bucket, prefix=full_prefix, recursive=True
         )
         return [obj.object_name for obj in objects]
 
     def ensure_bucket(self) -> None:
         bucket = self.bucket
-        if not self._client.bucket_exists(bucket):
-            self._client.make_bucket(bucket)
+        if not self._private_client.bucket_exists(bucket):
+            self._private_client.make_bucket(bucket)
 
     def ensure_directory_marker(self) -> None:
         """
@@ -81,9 +88,8 @@ class MinioStorageProvider:
         self.ensure_bucket()
         marker_key = self._prefix() + "/"
         try:
-            self._client.put_object(self.bucket, marker_key, io.BytesIO(b""), 0)
+            self._private_client.put_object(self.bucket, marker_key, io.BytesIO(b""), 0)
         except S3Error:
-            # ignore if it already exists or if server rejects folder markers
             pass
 
     def upload_bytes(
@@ -97,7 +103,7 @@ class MinioStorageProvider:
 
         self.ensure_bucket()
         resolved_content_type = content_type or self._guess_content_type(filename)
-        self._client.put_object(
+        self._private_client.put_object(
             bucket_name=self.bucket,
             object_name=self._object_key(filename),
             data=io.BytesIO(data),
@@ -115,7 +121,7 @@ class MinioStorageProvider:
     ) -> None:
         self.ensure_bucket()
         resolved_content_type = content_type or self._guess_content_type(filename)
-        self._client.put_object(
+        self._private_client.put_object(
             bucket_name=self.bucket,
             object_name=self._object_key(filename),
             data=fileobj,
@@ -130,15 +136,16 @@ class MinioStorageProvider:
         expires: int = 3600,
         inline: bool = True,
     ) -> str:
+        """
+        Generate a URL intended for external clients (browser/mobile),
+        so we use the PUBLIC client to ensure the hostname is s3.iz-regensburg.de.
+        """
         response_headers: dict[str, str] = {}
 
-        # Force preview in browser (when the browser supports the type)
         if inline:
             response_headers["response-content-disposition"] = "inline"
-            # If you want to preserve the filename in the Save dialog, you can do:
-            # response_headers["response-content-disposition"] = f'inline; filename="{filename}"'
 
-        return self._client.presigned_get_object(
+        return self._public_client.presigned_get_object(
             bucket_name=self.bucket,
             object_name=self._object_key(filename),
             expires=timedelta(seconds=expires),
@@ -146,4 +153,4 @@ class MinioStorageProvider:
         )
 
     def delete(self, filename: str) -> None:
-        self._client.remove_object(self.bucket, self._object_key(filename))
+        self._private_client.remove_object(self.bucket, self._object_key(filename))
