@@ -11,3 +11,11 @@ class PostContentType(StrEnum):
     EVENT = "event"
     INFO = "info"
     ANNOUNCEMENT = "announcement"
+
+
+class AllowedMediaType(StrEnum):
+    JPEG = "image/jpeg"
+    PNG = "image/png"
+    WEBP = "image/webp"
+    MP4 = "video/mp4"
+    PDF = "application/pdf"
