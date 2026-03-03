@@ -1,0 +1,22 @@
+---
+services:
+  website:
+    build:
+      context: ../../izr-website
+      args:
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL}
+      - VITE_MOSQUE_NAME=${VITE_MOSQUE_NAME}
+
+    volumes:
+    - cache:/code/.cache
+    ports:
+    - 8004:80
+
+    depends_on:
+      api:
+        condition: service_started
+    networks:
+    - izr-api-net
+
+volumes:
+  cache:

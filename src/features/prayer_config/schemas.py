@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Literal, Optional
 from uuid import UUID, uuid4
 
 from pydantic import model_validator
@@ -137,3 +137,9 @@ class PrayerTimeConfigurationUpdate(SQLModel):
 class PrayerConfigurationFilter(PageParams):
     id: Optional[UUID] = None
     mosque_id: Optional[UUID] = None
+
+
+class CalcMethodLanguage(SQLModel):
+    lang: Literal["en", "ar", "de"] = Field(
+        description="Language code for calculation method labels"
+    )

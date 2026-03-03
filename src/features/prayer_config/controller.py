@@ -5,6 +5,7 @@ from src.core.exceptions import guard
 from src.features.prayer_config.component import PrayerConfigComponent
 from src.features.prayer_config.enums import CalculationMethod
 from src.features.prayer_config.schemas import (
+    CalcMethodLanguage,
     PrayerConfigurationFilter,
     PrayerConfigurationIn,
     PrayerConfigurationOut,
@@ -74,5 +75,7 @@ class PrayerConfigController:
         )
 
     @guard
-    def __get_calculation_methods(self) -> dict[int, str]:
-        return CalculationMethod.labels()
+    def __get_calculation_methods(
+        self, language: CalcMethodLanguage = Depends()
+    ) -> dict[int, str]:
+        return CalculationMethod.labels(language.lang)
