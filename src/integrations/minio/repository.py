@@ -13,22 +13,17 @@ from .settings import MinioSettings
 
 class MinioStorageProvider:
     """
-    Uses:
-      - private client for all S3 operations (upload/list/delete/ensure_bucket)
-      - public client ONLY for presigned URL generation (so URLs use the public domain)
+    Uses one MinIO client for all S3 operations, including presigned URL generation.
     """
 
     def __init__(
         self,
         *,
-        private_client: Minio,
-        public_client: Minio,
-        settings: MinioSettings,
+        client: Minio,
         directory: DirectoryEnum | None = None,
     ) -> None:
-        self._private_client = private_client
-        self._public_client = public_client
-        self._settings = settings
+        self._client = client
+        self._settings = MinioSettings()
         self._directory = directory
 
     @property
@@ -68,15 +63,15 @@ class MinioStorageProvider:
 
     def list_objects(self, prefix: str = "") -> list[str]:
         full_prefix = self._object_key(prefix)
-        objects = self._private_client.list_objects(
+        objects = self._client.list_objects(
             self.bucket, prefix=full_prefix, recursive=True
         )
         return [obj.object_name for obj in objects]
 
     def ensure_bucket(self) -> None:
         bucket = self.bucket
-        if not self._private_client.bucket_exists(bucket):
-            self._private_client.make_bucket(bucket)
+        if not self._client.bucket_exists(bucket):
+            self._client.make_bucket(bucket)
 
     def ensure_directory_marker(self) -> None:
         """
@@ -88,7 +83,7 @@ class MinioStorageProvider:
         self.ensure_bucket()
         marker_key = self._prefix() + "/"
         try:
-            self._private_client.put_object(self.bucket, marker_key, io.BytesIO(b""), 0)
+            self._client.put_object(self.bucket, marker_key, io.BytesIO(b""), 0)
         except S3Error:
             pass
 
@@ -103,7 +98,7 @@ class MinioStorageProvider:
 
         self.ensure_bucket()
         resolved_content_type = content_type or self._guess_content_type(filename)
-        self._private_client.put_object(
+        self._client.put_object(
             bucket_name=self.bucket,
             object_name=self._object_key(filename),
             data=io.BytesIO(data),
@@ -121,7 +116,7 @@ class MinioStorageProvider:
     ) -> None:
         self.ensure_bucket()
         resolved_content_type = content_type or self._guess_content_type(filename)
-        self._private_client.put_object(
+        self._client.put_object(
             bucket_name=self.bucket,
             object_name=self._object_key(filename),
             data=fileobj,
@@ -137,15 +132,14 @@ class MinioStorageProvider:
         inline: bool = True,
     ) -> str:
         """
-        Generate a URL intended for external clients (browser/mobile),
-        so we use the PUBLIC client to ensure the hostname is s3.iz-regensburg.de.
+        Generate a presigned URL using the configured endpoint.
         """
         response_headers: dict[str, str] = {}
 
         if inline:
             response_headers["response-content-disposition"] = "inline"
 
-        return self._public_client.presigned_get_object(
+        return self._client.presigned_get_object(
             bucket_name=self.bucket,
             object_name=self._object_key(filename),
             expires=timedelta(seconds=expires),
@@ -153,4 +147,4 @@ class MinioStorageProvider:
         )
 
     def delete(self, filename: str) -> None:
-        self._private_client.remove_object(self.bucket, self._object_key(filename))
+        self._client.remove_object(self.bucket, self._object_key(filename))

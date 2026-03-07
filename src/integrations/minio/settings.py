@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pydantic import Field
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -10,28 +10,20 @@ class MinioSettings(BaseSettings):
         extra="ignore",
     )
 
-    # PRIVATE / internal (Docker network) endpoint: used for upload/list/delete/etc.
-    private_endpoint: str = Field(
+    endpoint: str = Field(
         default="minio:9000",
-        alias="MINIO_PRIVATE_ENDPOINT",
-        description="Host:port for internal traffic, e.g. 'minio:9000'",
+        validation_alias=AliasChoices("MINIO_ENDPOINT", "MINIO_PRIVATE_ENDPOINT"),
+        description="MinIO endpoint host:port, e.g. 'minio:9000'.",
     )
-    private_secure: bool = Field(
+    secure: bool = Field(
         default=False,
-        alias="MINIO_PRIVATE_SECURE",
-        description="Use HTTPS for private endpoint (usually false in compose).",
+        validation_alias=AliasChoices("MINIO_SECURE", "MINIO_PRIVATE_SECURE"),
+        description="Use HTTPS for endpoint.",
     )
-
-    # PUBLIC endpoint: used ONLY for generating presigned URLs for browsers/clients
-    public_endpoint: str = Field(
-        default="s3.iz-regensburg.de",
-        alias="MINIO_PUBLIC_ENDPOINT",
-        description="Public S3 domain behind Caddy, e.g. 's3.iz-regensburg.de'",
-    )
-    public_secure: bool = Field(
-        default=True,
-        alias="MINIO_PUBLIC_SECURE",
-        description="Use HTTPS for public endpoint (usually true).",
+    proxy_url: str | None = Field(
+        default=None,
+        alias="MINIO_PROXY_URL",
+        description="Optional HTTP proxy URL used by the MinIO client.",
     )
 
     # credentials / bucket
@@ -47,24 +39,3 @@ class MinioSettings(BaseSettings):
         default="db-backups", alias="DB_BACKUPS_DIRECTORY"
     )
     media_directory: str = Field(default="media", alias="MEDIA_DIRECTORY")
-
-    # Backward-compatible aliases (optional):
-    # If other code still reads settings.endpoint/settings.secure,
-    # make them resolve to the private endpoint.
-    @property
-    def endpoint(self) -> str:  # keeps old code working if needed
-        return self.private_endpoint
-
-    @property
-    def secure(self) -> bool:  # keeps old code working if needed
-        return self.private_secure
-
-
-_settings: MinioSettings | None = None
-
-
-def get_minio_settings() -> MinioSettings:
-    global _settings
-    if _settings is None:
-        _settings = MinioSettings()
-    return _settings

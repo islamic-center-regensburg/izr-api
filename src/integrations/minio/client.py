@@ -1,43 +1,32 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 
 from minio import Minio
+import urllib3
 
-
-@dataclass(frozen=True, slots=True)
-class MinioClientConfig:
-    endpoint: str
-    access_key: str
-    secret_key: str
-    secure: bool
+from src.integrations.minio.settings import MinioSettings
 
 
 class MinioClientFactory:
     """
-    Builds two MinIO clients:
-      - private: for internal Docker network traffic (e.g. endpoint "minio:9000", secure=False)
-      - public:  for generating presigned URLs with the real domain (e.g. "s3.iz-regensburg.de", secure=True)
+    Builds a single MinIO client. If `proxy_url` is set, requests are sent through
+    an HTTP proxy while preserving the configured endpoint host for URL generation.
     """
 
-    def __init__(
-        self, *, private: MinioClientConfig, public: MinioClientConfig
-    ) -> None:
-        self._private = private
-        self._public = public
+    def __init__(self) -> None:
+        self._settings = MinioSettings()
 
-    def create_private(self) -> Minio:
-        return Minio(
-            endpoint=self._private.endpoint,
-            access_key=self._private.access_key,
-            secret_key=self._private.secret_key,
-            secure=self._private.secure,
+    def create(self) -> Minio:
+        http_client = (
+            urllib3.ProxyManager(proxy_url=self._settings.proxy_url)
+            if self._settings.proxy_url
+            else None
         )
 
-    def create_public(self) -> Minio:
         return Minio(
-            endpoint=self._public.endpoint,
-            access_key=self._public.access_key,
-            secret_key=self._public.secret_key,
-            secure=self._public.secure,
+            endpoint=self._settings.endpoint,
+            access_key=self._settings.access_key,
+            secret_key=self._settings.secret_key,
+            secure=self._settings.secure,
+            http_client=http_client,
         )
