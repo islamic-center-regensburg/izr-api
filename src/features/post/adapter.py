@@ -16,6 +16,7 @@ class PostAdapter:
     ) -> list[PostTranslationOut]:
         return [
             PostTranslationOut(
+                id=translation.id,
                 title=translation.title,
                 description=translation.description,
                 language=translation.language,
