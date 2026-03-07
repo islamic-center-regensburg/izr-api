@@ -81,7 +81,7 @@ class PostTranslationOut(PostTranslationBase):
     pass
 
 
-class PostTranslationIn(SQLModel):
+class PostTranslationMetaIn(SQLModel):
     title: str | None = Field(None, description="Title of the post")
     language: SupportedLanguages = Field(
         ..., description="Language of the post translation"
@@ -94,7 +94,7 @@ class PostTranslationMediaIn(SQLModel):
     )
 
 
-class PostTranslationUpdate(PostTranslationIn):
+class PostTranslationUpdate(PostTranslationMetaIn):
     pass
 
 

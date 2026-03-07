@@ -7,6 +7,8 @@ from src.core.db.pagination import PaginationBuilder
 from src.features.post.schemas import (
     PostPaginationFilter,
     PostRead,
+    PostTranslationMetaIn,
+    PostTranslationUpdate,
 )
 from src.features.post.schemas import (
     PostFilter,
@@ -14,7 +16,6 @@ from src.features.post.schemas import (
     PostListOut,
     PostOut,
     PostTable,
-    PostTranslationIn,
     PostTranslationRead,
     PostTranslationTable,
     SupportedLanguages,
@@ -134,7 +135,7 @@ class PostTranslationOperation:
     def create_post_translation(
         self,
         post_id: UUID,
-        post_translation_in: PostTranslationIn,
+        post_translation_in: PostTranslationMetaIn,
         description: str | None,
         storage_dir_path: str | None = None,
     ) -> PostTranslationRead:
@@ -160,7 +161,8 @@ class PostTranslationOperation:
         self,
         post_id: UUID,
         translation_id: UUID,
-        post_translation_in: PostTranslationIn,
+        post_translation_in: PostTranslationUpdate,
+        description: str | None,
     ) -> PostTranslationRead:
         with self.__db_repository_provider.get_database_repository() as db:
             post_translation = db.get_by_id(PostTranslationTable, translation_id)
@@ -169,10 +171,9 @@ class PostTranslationOperation:
                     "Post translation does not belong to the given post"
                 )
 
-            for key, value in post_translation_in.model_dump(
-                exclude_unset=True
-            ).items():
-                setattr(post_translation, key, value)
+            post_translation.title = post_translation_in.title
+            post_translation.language = post_translation_in.language
+            post_translation.description = description
 
             return db.update(post_translation)
 

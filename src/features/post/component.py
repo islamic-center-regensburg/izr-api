@@ -14,9 +14,10 @@ from src.features.post.schemas import (
     PostListOut,
     PostOut,
     PostPaginationFilter,
-    PostTranslationIn,
     PostTranslationMediaIn,
+    PostTranslationMetaIn,
     PostTranslationRead,
+    PostTranslationUpdate,
 )
 from src.features.post.operation import PostOperation, PostTranslationOperation
 from src.features.mosque.operation import MosqueOperation
@@ -88,14 +89,11 @@ class PostComponent:
         self,
         post_id: UUID,
         translation_id: UUID,
-        post_translation_in: PostTranslationIn,
+        post_translation_update: PostTranslationUpdate,
         description: str | None,
     ) -> PostTranslationRead:
-        post_translation_in.description = description
         return self.__post_translation_operation.update_post_translation(
-            post_id,
-            translation_id,
-            post_translation_in,
+            post_id, translation_id, post_translation_update, description
         )
 
     def delete_post_translation(
@@ -144,19 +142,22 @@ class PostComponent:
             minio_provider=minio_provider,
         )
 
-        remaining_files = self.__get_all_media_in_directory(
-            mosque_id=post.mosque_id,
-            dir=post_translation.media,
-            minio_provider=minio_provider,
-        )
+        try:
+            remaining_files = self.__get_all_media_in_directory(
+                dir=f"{post.mosque_id}/{post_translation.media}",
+                minio_provider=minio_provider,
+            )
 
-        if not file_path and len(remaining_files) == 0:
-            return self.__post_translation_operation.clear_post_translation_media(
+            if not file_path and len(remaining_files) == 0:
+                return self.__post_translation_operation.clear_post_translation_media(
+                    translation_id,
+                )
+            else:
+                raise Exception("Media files still exist for the post translation")
+        except Exception:
+            return self.__post_translation_operation.get_post_translation_by_id(
                 translation_id,
             )
-        return self.__post_translation_operation.get_post_translation_by_id(
-            translation_id,
-        )
 
     def delete_post(
         self,
@@ -169,11 +170,12 @@ class PostComponent:
             None,
         )
 
+        dir = f"{post.mosque_id}/posts/post_{post_id}"
+
         for post_translation in post_translations:
             if post_translation.media:
                 self.__delete_all_media_in_directory(
-                    mosque_id=post.mosque_id,
-                    dir=post_translation.media,
+                    dir=dir,
                     minio_provider=minio_provider,
                 )
             self.__post_translation_operation.delete_post_translation(
@@ -187,7 +189,7 @@ class PostComponent:
     def create_post_translation(
         self,
         post_id: UUID,
-        post_translation_in: PostTranslationIn,
+        post_translation_in: PostTranslationMetaIn,
         post_translation_description: str | None = None,
     ):
         post = self.__post_operation.get_post_by_id(
@@ -232,13 +234,6 @@ class PostComponent:
             files=media_in.media,
             allowed=AllowedMediaType,
         )
-
-        if post_translation.media:
-            self.__delete_all_media_in_directory(
-                mosque_id=post.mosque_id,
-                dir=post_translation.media,
-                minio_provider=minio_provider,
-            )
 
         files_uploaded = []
         try:

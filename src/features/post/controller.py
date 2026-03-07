@@ -11,8 +11,8 @@ from src.features.post.schemas import (
     PostOut,
     PostPaginationFilter,
     PostRead,
-    PostTranslationIn,
     PostTranslationMediaIn,
+    PostTranslationMetaIn,
     PostTranslationRead,
 )
 from src.features.post.storage import get_minio_repository
@@ -128,7 +128,7 @@ class PostController:
     async def __create_translation_for_post(
         self,
         post_id: UUID,
-        post_translation_in: PostTranslationIn = Depends(),
+        post_translation_in: PostTranslationMetaIn = Depends(),
         description: str | None = Body(
             None, description="Description of the post translation"
         ),
@@ -157,7 +157,7 @@ class PostController:
         self,
         post_id: UUID,
         translation_id: UUID,
-        post_translation_in: PostTranslationIn = Depends(),
+        post_translation_in: PostTranslationMetaIn = Depends(),
         description: str | None = Body(
             None, description="Description of the post translation"
         ),
