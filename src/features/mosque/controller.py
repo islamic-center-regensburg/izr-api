@@ -1,11 +1,17 @@
+from typing import Annotated
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException
-from src.core.db.pagination import PaginatedResponse
+
+from fastapi import APIRouter, Query
+from src.core.db.schemas import PaginatedList
 from src.core.exceptions import guard
 from src.features.mosque.component import MosqueComponent
-from src.features.mosque.schemas import MosqueIn, MosqueFilter, MosqueOut, MosqueUpdate
 from src.core.router.router_builder import EndpointType, RouterBuilder
-from src.core.logging.logger import logger
+from src.features.mosque.models.schemas import (
+    MosqueCreate,
+    MosqueQueryParams,
+    MosqueRead,
+    MosqueUpdate,
+)
 
 
 class MosqueController:
@@ -18,7 +24,7 @@ class MosqueController:
             "",
             endpoint_type=EndpointType.LIST,
             endpoint=self.__get_all_mosques,
-            response_model=PaginatedResponse[MosqueOut],
+            response_model=PaginatedList[MosqueRead],
             summary="List all mosques",
         )
 
@@ -26,14 +32,14 @@ class MosqueController:
             "/{mosque_id}",
             endpoint_type=EndpointType.GET,
             endpoint=self.__get_mosque_by_id,
-            response_model=MosqueOut,
+            response_model=MosqueRead,
             summary="Get mosque by ID",
         )
         router_builder.add_method(
             "/{mosque_id}",
             endpoint_type=EndpointType.UPDATE,
             endpoint=self.__update_mosque,
-            response_model=MosqueOut,
+            response_model=MosqueRead,
             summary="Update mosque by ID",
         )
 
@@ -41,38 +47,22 @@ class MosqueController:
             "",
             endpoint_type=EndpointType.CREATE,
             endpoint=self.__add_mosque,
-            response_model=MosqueOut,
+            response_model=MosqueRead,
             summary="Add mosque",
         )
         return router_builder.get_router()
 
     def __get_all_mosques(
-        self, filter: MosqueFilter = Depends()
-    ) -> PaginatedResponse[MosqueOut]:
-        try:
-            return self.__mosque_component.get_all_mosques(filter)
-        except Exception as e:
-            logger.error("Internal server error", exc_info=True)
-            raise HTTPException(status_code=500, detail="Internal server error") from e
+        self, query: Annotated[MosqueQueryParams, Query()]
+    ) -> PaginatedList[MosqueRead]:
+        return self.__mosque_component.get_all_mosques(query)
 
     @guard
-    def __get_mosque_by_id(self, mosque_id: UUID) -> MosqueOut:
-        mosque = self.__mosque_component.get_mosque_by_id(mosque_id)
-        return mosque
+    def __get_mosque_by_id(self, mosque_id: UUID) -> MosqueRead:
+        return self.__mosque_component.get_mosque_by_id(mosque_id)
 
-    def __add_mosque(self, mosque_data: MosqueIn) -> MosqueOut:
-        try:
-            return self.__mosque_component.add_mosque(mosque_data)
-        except Exception as e:
-            logger.error("Internal server error", exc_info=True)
-            raise HTTPException(status_code=500, detail="Internal server error") from e
+    def __add_mosque(self, mosque_data: MosqueCreate) -> MosqueRead:
+        return self.__mosque_component.add_mosque(mosque_data)
 
-    def __update_mosque(self, mosque_id: UUID, mosque_data: MosqueUpdate) -> MosqueOut:
-        try:
-            updated_mosque = self.__mosque_component.update_mosque(
-                mosque_id, mosque_data
-            )
-            return updated_mosque
-        except Exception as e:
-            logger.error("Internal server error", exc_info=True)
-            raise HTTPException(status_code=500, detail="Internal server error") from e
+    def __update_mosque(self, mosque_id: UUID, mosque_data: MosqueUpdate) -> MosqueRead:
+        return self.__mosque_component.update_mosque(mosque_id, mosque_data)

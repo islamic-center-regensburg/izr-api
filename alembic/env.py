@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from sqlalchemy import MetaData
 from sqlmodel import SQLModel
 
-from src.features.mosque.schemas import MosqueTable
+from src.features.mosque.models.tables import MosqueTable
 from src.features.post.schemas import PostTable, PostTranslationTable
 from src.features.prayer_config.schemas import PrayerConfigurationTable
 from src.features.prayer_iqama.schemas import PrayerIqamaTable

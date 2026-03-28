@@ -1,20 +1,18 @@
+from datetime import datetime
 from typing import Generic, List, TypeVar
 from fastapi import Query
 from pydantic import BaseModel, ConfigDict
 from pydantic.generics import GenericModel
+from sqlmodel import SQLModel
 
 T = TypeVar("T")
 
 
-class PaginationMetadata(BaseModel):
+class PaginatedList(GenericModel, Generic[T]):
+    items: List[T]
     total: int
     page: int
     size: int
-
-
-class PaginatedResponse(GenericModel, Generic[T]):
-    data: List[T]
-    metadata: PaginationMetadata
 
 
 class PaginationBuilder:
@@ -25,14 +23,12 @@ class PaginationBuilder:
         total: int,
         page: int,
         size: int,
-    ) -> PaginatedResponse[T]:
-        return PaginatedResponse[T](
-            data=items,
-            metadata=PaginationMetadata(
-                total=total,
-                page=page,
-                size=size,
-            ),
+    ) -> PaginatedList[T]:
+        return PaginatedList[T](
+            items=items,
+            total=total,
+            page=page,
+            size=size,
         )
 
 
@@ -50,3 +46,13 @@ class PageParams(BaseModel):
     @property
     def limit(self) -> int:
         return self.size
+
+
+class BaseQueryParams(SQLModel):
+    valid_at: datetime | None = Query(
+        None, description="Filter records valid at this datetime"
+    )
+    sort: list[str] | None = Query(
+        None,
+        description="List of fields to sort by, prefix with '-' for descending (e.g. ['name', '-created_at'])",
+    )
