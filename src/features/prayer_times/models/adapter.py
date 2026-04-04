@@ -8,19 +8,54 @@ from src.features.prayer_times.integration import (
     AlAdhanResponse,
 )
 from src.features.prayer_times.models.schemas import (
+    APIPrayerTimes,
+    APIPrayerTimesOut,
     AlAdhanPrayerTimesFilter,
-    PrayerTimes,
-    PrayerTimesCreate,
+    PrayerTimesBase,
+    StoredPrayerTimes,
+    StoredPrayerTimesCreate,
     PrayerTimesFilter,
-    PrayerTimesOut,
+    StoredPrayerTimesOut,
 )
 from src.features.prayer_times.models.tables import PrayerTimesTable
 
 
 class PrayerTimesAdapter:
     @staticmethod
-    def to_prayer_times(prayer_times: PrayerTimesTable) -> PrayerTimes:
-        return PrayerTimes(
+    def to_stored_prayer_times(prayer_times: PrayerTimesTable) -> StoredPrayerTimes:
+        return StoredPrayerTimes(
+            fajr=prayer_times.fajr,
+            shuruq=prayer_times.shuruq,
+            dhuhr=prayer_times.dhuhr,
+            asr=prayer_times.asr,
+            maghrib=prayer_times.maghrib,
+            isha=prayer_times.isha,
+            gregorian_date=prayer_times.gregorian_date,
+            hijri_date=prayer_times.hijri_date,
+            valid_from=prayer_times.valid_from,
+            valid_to=prayer_times.valid_to,
+            update_reason=prayer_times.update_reason,
+        )
+
+    def to_stored_prayer_times_out(
+        self, prayer_times: StoredPrayerTimes
+    ) -> StoredPrayerTimesOut:
+        return StoredPrayerTimesOut(
+            fajr=prayer_times.fajr,
+            shuruq=prayer_times.shuruq,
+            dhuhr=prayer_times.dhuhr,
+            asr=prayer_times.asr,
+            maghrib=prayer_times.maghrib,
+            isha=prayer_times.isha,
+            gregorian_date=prayer_times.gregorian_date,
+            hijri_date=prayer_times.hijri_date,
+            valid_from=prayer_times.valid_from,
+            valid_to=prayer_times.valid_to,
+            update_reason=prayer_times.update_reason,
+        )
+
+    def to_api_prayer_times_out(self, prayer_times: APIPrayerTimes):
+        return APIPrayerTimesOut(
             fajr=prayer_times.fajr,
             shuruq=prayer_times.shuruq,
             dhuhr=prayer_times.dhuhr,
@@ -31,28 +66,8 @@ class PrayerTimesAdapter:
             hijri_date=prayer_times.hijri_date,
         )
 
-    def to_prayer_times_list(
-        self, prayer_times_list: list[PrayerTimesTable]
-    ) -> list[PrayerTimes]:
-        return [self.to_prayer_times(pt) for pt in prayer_times_list]
-
-    def to_prayer_times_out(self, prayer_times: list[PrayerTimes]):
-        return [
-            PrayerTimesOut(
-                fajr=item.fajr,
-                shuruq=item.shuruq,
-                dhuhr=item.dhuhr,
-                asr=item.asr,
-                maghrib=item.maghrib,
-                isha=item.isha,
-                gregorian_date=item.gregorian_date,
-                hijri_date=item.hijri_date,
-            )
-            for item in prayer_times
-        ]
-
-    def from_prayer_create(
-        self, prayer_times_create: PrayerTimesCreate
+    def from_stored_prayer_times_create(
+        self, prayer_times_create: StoredPrayerTimesCreate
     ) -> PrayerTimesTable:
         return PrayerTimesTable(
             fajr=prayer_times_create.fajr,
@@ -64,11 +79,31 @@ class PrayerTimesAdapter:
             gregorian_date=prayer_times_create.gregorian_date,
             hijri_date=prayer_times_create.hijri_date,
             mosque_id=prayer_times_create.mosque_id,
+            year=int(prayer_times_create.gregorian_date.split("-")[2]),
+            month=int(prayer_times_create.gregorian_date.split("-")[1]),
+            day=int(prayer_times_create.gregorian_date.split("-")[0]),
         )
 
-    def from_adhan_api(self, adhan_prayer_times: AlAdhanResponse) -> list[PrayerTimes]:
-        def __convert_item(item: AlAdhanPrayerTimesItem) -> PrayerTimes:
-            return PrayerTimes(
+    def to_stored_prayer_times_create(
+        self, prayer_times: PrayerTimesBase, mosque_id: str
+    ) -> StoredPrayerTimesCreate:
+        return StoredPrayerTimesCreate(
+            fajr=prayer_times.fajr,
+            shuruq=prayer_times.shuruq,
+            dhuhr=prayer_times.dhuhr,
+            asr=prayer_times.asr,
+            maghrib=prayer_times.maghrib,
+            isha=prayer_times.isha,
+            gregorian_date=prayer_times.gregorian_date,
+            hijri_date=prayer_times.hijri_date,
+            mosque_id=mosque_id,
+        )
+
+    def from_adhan_api(
+        self, adhan_prayer_times: AlAdhanResponse
+    ) -> list[APIPrayerTimes]:
+        def __convert_item(item: AlAdhanPrayerTimesItem) -> APIPrayerTimes:
+            return APIPrayerTimes(
                 fajr=item.timings.Fajr,
                 shuruq=item.timings.Sunrise,
                 dhuhr=item.timings.Dhuhr,

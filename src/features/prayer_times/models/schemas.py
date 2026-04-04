@@ -4,8 +4,8 @@ from sqlmodel import Field, SQLModel
 from datetime import UTC, datetime
 from pydantic import BaseModel, ConfigDict
 
-from src.core.db.schemas import BaseQueryParams
-from src.features.prayer_times.enums import PrayerTimesSource
+from src.core.db.schemas import BaseQueryParams, VersionedBaseModel
+from src.features.prayer_times.enums import PrayerTimesFiletype, PrayerTimesSource
 
 
 class PrayerTimesBase(SQLModel):
@@ -19,16 +19,24 @@ class PrayerTimesBase(SQLModel):
     hijri_date: str = Field(description="Hijri date for this row")
 
 
-class PrayerTimesCreate(PrayerTimesBase):
+class StoredPrayerTimesCreate(PrayerTimesBase):
     mosque_id: str = Field(description="ID of the mosque")
     pass
 
 
-class PrayerTimes(PrayerTimesBase):
+class StoredPrayerTimes(PrayerTimesBase, VersionedBaseModel):
     pass
 
 
-class PrayerTimesOut(PrayerTimesBase):
+class StoredPrayerTimesOut(StoredPrayerTimes):
+    pass
+
+
+class APIPrayerTimes(PrayerTimesBase):
+    pass
+
+
+class APIPrayerTimesOut(APIPrayerTimes):
     pass
 
 
@@ -48,11 +56,11 @@ class PrayerTimesIn(SQLModel):
     file: UploadFile = Field(
         description="CSV or Excel file containing prayer times data"
     )
-    year: int = Field(
-        ..., description="Year for which the prayer times are being uploaded"
-    )
     mosque_id: str = Field(
         ..., description="ID of the mosque for which prayer times are being uploaded"
+    )
+    file_type: PrayerTimesFiletype = Field(
+        ..., description="Type of the uploaded file (csv or xls)"
     )
 
 

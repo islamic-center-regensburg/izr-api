@@ -10,10 +10,13 @@ from src.features.prayer_times.models.adapter import (
 )
 from src.features.prayer_times.models.schemas import (
     AlAdhanPrayerTimesFilter,
+    PrayerTimesBase,
     PrayerTimesFilter,
+    PrayerTimesIn,
 )
 from src.features.prayer_times.operation import PrayerTimesOperation
 from src.features.prayer_times.enums import PrayerTimesSource
+from src.integrations.prayer_times_parser.repository import PrayerTimesParserProvider
 
 
 class PrayerTimesComponent:
@@ -29,13 +32,19 @@ class PrayerTimesComponent:
         self.__prayer_times_adapter = PrayerTimesAdapter()
         self.__al_adhan_client_provider = AlAdhanAPIClientProvider()
         self.__al_adhan_params_adapter = AlAdhanPrayerTimesParamsAdapter()
+        self.__prayer_times_parser = PrayerTimesParserProvider()
 
     def __get_stored_prayer_times(
         self,
         mosque_id: str,
         filters: PrayerTimesFilter,
     ):
-        return self.__prayer_times_operation.find(mosque_id, filters)
+        prayer_times = self.__prayer_times_operation.find(mosque_id, filters)
+
+        return [
+            self.__prayer_times_adapter.to_stored_prayer_times_out(pt)
+            for pt in prayer_times
+        ]
 
     def get_prayer_times_for_mosque(
         self,
@@ -56,7 +65,10 @@ class PrayerTimesComponent:
                 )
             )
 
-            return self.__prayer_times_adapter.to_prayer_times_list(prayer_times)
+            return [
+                self.__prayer_times_adapter.to_api_prayer_times_out(pt)
+                for pt in prayer_times
+            ]
 
     def get_prayer_times(
         self,
@@ -65,7 +77,24 @@ class PrayerTimesComponent:
         prayer_times = self.__fetch_prayer_times(
             self.__al_adhan_params_adapter.from_al_adhan_prayer_times_filter(filters)
         )
-        return self.__prayer_times_adapter.to_prayer_times_list(prayer_times)
+        return [
+            self.__prayer_times_adapter.to_api_prayer_times_out(pt)
+            for pt in prayer_times
+        ]
+
+    def upload_prayer_times_for_mosque(
+        self, mosque_id: str, prayer_times_in: PrayerTimesIn
+    ):
+        parser = self.__prayer_times_parser.get_parser(prayer_times_in.file_type)
+        data = prayer_times_in.file.file.read()
+        prayer_times: list[PrayerTimesBase] = parser.parse_bytes(data)
+
+        return self.__prayer_times_operation.save(
+            prayer_times_create=[
+                self.__prayer_times_adapter.to_stored_prayer_times_create(pt, mosque_id)
+                for pt in prayer_times
+            ],
+        )
 
     def __fetch_prayer_times(self, params: AlAdhanPrayerTimesParams):
         response = self.__al_adhan_client_provider.get_prayer_times(params)
