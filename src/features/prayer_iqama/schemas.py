@@ -6,7 +6,7 @@ from typing import Optional
 from sqlalchemy import Column, Time
 from sqlmodel import Field, SQLModel
 
-from src.core.db.pagination import PageParams
+from src.core.db.schemas import PageParams
 from src.features.prayer_iqama.enums import IqamaMode, PrayerName
 
 

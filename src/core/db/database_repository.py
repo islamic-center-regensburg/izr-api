@@ -2,14 +2,15 @@ import re
 from copy import deepcopy
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from typing import Any, Optional, Type, Union
+from typing import Any, Callable, Optional, Type, Union
 
 from sqlalchemy import distinct
 from sqlalchemy.sql.functions import func
 from sqlmodel import Session, SQLModel, select
 
-from src.core.db.filters import Filter
+from src.core.db.filters import Filter, Operator
 from src.core.db.order_by import OrderBy
+from src.core.db.validity import VersionedSQLModel
 
 ResourceId = Union[int, str]
 
@@ -136,11 +137,48 @@ class DatabaseRepository:
                         )
         return select_statement
 
-    def create[T: SQLModel](self, record: T) -> T:
+    def create[T: SQLModel](
+        self,
+        record: T,
+        invalidated_records_callback: Callable[[list[T]], None] | None = None,
+    ) -> T:
         self.__db.add(record)
         self.__db.commit()
         self.__db.refresh(record)
+        if isinstance(record, VersionedSQLModel):
+            invalidated_records = self.invalidate_other_existing_records(
+                record.__class__,
+                record,
+                update_reason=f"Invalidation: New {record.__class__.__name__} created",
+                invalidated_at=record.valid_from,
+            )
+            if invalidated_records_callback:
+                invalidated_records_callback(invalidated_records)
         return record
+
+    def invalidate_other_existing_records[T: VersionedSQLModel](
+        self,
+        model: type[T],
+        record: SQLModel,
+        update_reason: str | None = None,
+        invalidated_at: datetime | None = None,
+    ) -> list[T]:
+        invalidated_at = invalidated_at or datetime.now(UTC)
+        filters: list[Filter] = Filter.get_validity_filters(valid_at=invalidated_at)
+        filters.append(Filter(attribute="id", operator=Operator.NE, value=record.id))  # pyright: ignore [reportAttributeAccessIssue]
+        filters.extend(
+            [
+                Filter(
+                    attribute=field, operator=Operator.EQ, value=getattr(record, field)
+                )
+                for field in model.get_business_key_fields()
+            ]
+        )
+        if existing_records := self.get_all(model, filters=filters):
+            return self.invalidate_records(
+                existing_records, update_reason, invalidated_at
+            )
+        return []
 
     def create_linked_records[T: SQLModel](
         self, record: SQLModel, linked_records: list[T], link_model: Type[SQLModel]
@@ -312,3 +350,33 @@ class DatabaseRepository:
         select_statement = self.__apply_filters(model, filters, select_statement)
 
         return self.__db.exec(select_statement).one()
+
+    def invalidate_records[T: VersionedSQLModel](
+        self,
+        records: list[T],
+        update_reason: str | None = None,
+        invalidated_at: datetime | None = None,
+    ) -> list[T]:
+        return [
+            self.invalidate_record(record, update_reason, invalidated_at)
+            for record in records
+        ]
+
+    def invalidate_record[T: VersionedSQLModel](
+        self,
+        record: T,
+        update_reason: str | None = None,
+        invalidated_at: datetime | None = None,
+    ) -> T:
+        invalidated_at = invalidated_at or datetime.now(UTC)
+        if (record.valid_to.tzinfo and record.valid_to > invalidated_at) or (
+            record.valid_to.tzinfo is None
+            and record.valid_to > invalidated_at.replace(tzinfo=None)
+        ):
+            record.valid_to = invalidated_at
+            record.update_reason = update_reason
+            return self.update(record)
+        return record
+
+    def exists(self, model: type[SQLModel], id: ResourceId) -> bool:  # noqa: A002
+        return self.__db.get(model, id) is not None

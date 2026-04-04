@@ -1,7 +1,7 @@
 from uuid import UUID
 from src.core.db.database_repository_provider import DatabaseRepositoryProvider
 from src.core.db.filters import Filter, Operator
-from src.core.db.pagination import PaginatedResponse, PaginationBuilder
+from src.core.db.schemas import PaginatedList, PaginationBuilder
 from src.features.prayer_iqama.schemas import (
     PrayerIqamaFilter,
     PrayerIqamaIn,
@@ -17,7 +17,7 @@ class PrayerIqamaOperation:
 
     def get_all_prayer_iqamas(
         self, filter: PrayerIqamaFilter
-    ) -> PaginatedResponse[PrayerIqamaOut]:
+    ) -> PaginatedList[PrayerIqamaOut]:
         filters = [
             Filter(
                 attribute="prayer_name", operator=Operator.EQ, value=filter.prayer_name

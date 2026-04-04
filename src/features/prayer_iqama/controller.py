@@ -1,7 +1,9 @@
+from typing import Annotated
 from uuid import UUID
-from fastapi import APIRouter, Depends
 
-from src.core.db.pagination import PaginatedResponse
+from fastapi import APIRouter, Query
+
+from src.core.db.schemas import PaginatedList
 from src.core.exceptions import guard
 from src.core.router.router_builder import EndpointType, RouterBuilder
 from src.features.prayer_iqama.component import PrayerIqamaComponent
@@ -24,7 +26,7 @@ class PrayerIqamaController:
             "",
             endpoint_type=EndpointType.LIST,
             endpoint=self.__get_all_prayer_iqamas,
-            response_model=PaginatedResponse[PrayerIqamaOut],
+            response_model=PaginatedList[PrayerIqamaOut],
             summary="Get Prayer Iqamas",
         )
         router_builder.add_method(
@@ -55,8 +57,8 @@ class PrayerIqamaController:
     @guard
     def __get_all_prayer_iqamas(
         self,
-        filter: PrayerIqamaFilter = Depends(),
-    ) -> PaginatedResponse[PrayerIqamaOut]:
+        filter: Annotated[PrayerIqamaFilter, Query()],
+    ) -> PaginatedList[PrayerIqamaOut]:
         return self.__prayer_iqama_component.get_prayer_iqamas(filter)
 
     @guard

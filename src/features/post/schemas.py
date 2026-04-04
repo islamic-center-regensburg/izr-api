@@ -7,7 +7,7 @@ from fastapi import File, UploadFile
 from pydantic import BaseModel
 from sqlmodel import SQLModel, Field
 
-from src.core.db.pagination import PageParams, PaginatedResponse
+from src.core.db.schemas import PageParams, PaginatedList
 from src.features.post.enums import PostContentType, SupportedLanguages
 
 
@@ -123,4 +123,4 @@ class PostOut(SQLModel):
     translations: list[PostTranslationOut]
 
 
-PostListOut = PaginatedResponse[PostOut]
+PostListOut = PaginatedList[PostOut]

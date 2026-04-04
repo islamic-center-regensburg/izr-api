@@ -1,5 +1,5 @@
 from src.core.db.database_repository_provider import DatabaseRepositoryProvider
-from src.features.mosque.schemas import MosqueOut, MosqueTable
+from src.features.mosque.models import MosqueOut, MosqueTable
 from src.core.logging.logger import logger
 
 

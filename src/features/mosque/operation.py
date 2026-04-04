@@ -1,59 +1,68 @@
+from typing import Protocol
 from uuid import UUID
-from src.core.db.pagination import PaginationBuilder
+from src.core.db.order_by import OrderByAdapter
+from src.core.db.schemas import PaginationBuilder
 from src.core.db.filters import Filter, Operator
 from src.core.db.database_repository_provider import DatabaseRepositoryProvider
-from src.features.mosque.schemas import MosqueFilter, MosqueTable
+from src.features.mosque.adapter import MosqueAdapter
+from src.features.mosque.models.schemas import MosqueQueryParams, MosqueUpdate
+from src.features.mosque.models.tables import MosqueTable
 
 
-class MosqueOperation:
+class MosqueOperationInterface(Protocol):
+    def find(self, query: MosqueQueryParams): ...
+    def get(self, mosque_id: str): ...
+    def create(self, mosque_data): ...
+    def update(self, mosque_id: UUID, mosque_data): ...
+
+
+class MosqueOperation(MosqueOperationInterface):
     def __init__(self, db_repository_provider: DatabaseRepositoryProvider):
-        self.db_repository = db_repository_provider
+        self.__db_repository = db_repository_provider
+        self.__mosque_adapter = MosqueAdapter()
+        self.__order_by_adapter = OrderByAdapter()
 
-    def get_all_mosques(self, filter: MosqueFilter):
-        filters = [
-            Filter(attribute="name", value=filter.name, operator=Operator.EQ),
-            Filter(attribute="city", value=filter.city, operator=Operator.EQ),
-            Filter(attribute="country", value=filter.country, operator=Operator.EQ),
-        ]
-        with self.db_repository.get_database_repository() as db:
-            data = db.get_all(
-                MosqueTable, filters=filters, limit=filter.limit, offset=filter.offset
+    def find(self, query: MosqueQueryParams):
+        filters = Filter.get_validity_filters(query.valid_at)
+        filters.extend(
+            [
+                Filter(attribute="name", value=query.name, operator=Operator.EQ),
+                Filter(attribute="city", value=query.city, operator=Operator.EQ),
+                Filter(attribute="country", value=query.country, operator=Operator.EQ),
+            ]
+        )
+
+        order_by = self.__order_by_adapter.from_sort_strings(query.sort or [])
+        with self.__db_repository.get_database_repository() as db:
+            records = db.get_all(
+                MosqueTable,
+                filters=filters,
+                limit=query.limit,
+                offset=query.offset,
+                order_by=order_by,
             )
             total = db.count(MosqueTable, filters=filters)
             return PaginationBuilder.build(
-                items=data,
+                items=records,
                 total=total,
-                page=filter.page,
-                size=filter.size,
+                page=query.page,
+                size=query.size,
             )
 
-    def get_mosque_by_id(self, mosque_id: str):
-        with self.db_repository.get_database_repository() as db:
-            mosque = db.get_by_id(MosqueTable, mosque_id)
-            return mosque
+    def get(self, mosque_id: str):
+        with self.__db_repository.get_database_repository() as db:
+            record = db.get_by_id(MosqueTable, mosque_id)
+            return record
 
-    def add_mosque(self, mosque_data):
-        with self.db_repository.get_database_repository() as db:
-            mosque_record = MosqueTable(
-                name=mosque_data.name,
-                address=mosque_data.address,
-                latitude=mosque_data.latitude,
-                longitude=mosque_data.longitude,
-                city=mosque_data.city,
-                country=mosque_data.country,
-                timezone=mosque_data.timezone,
+    def create(self, mosque_data):
+        with self.__db_repository.get_database_repository() as db:
+            record = db.create(self.__mosque_adapter.from_mosque_create(mosque_data))
+            return record
+
+    def update(self, mosque_id: UUID, mosque_update: MosqueUpdate):
+        with self.__db_repository.get_database_repository() as db:
+            existing_record = db.get_by_id(MosqueTable, mosque_id)
+            updated_record = db.update(
+                self.__mosque_adapter.from_mosque_update(mosque_update, existing_record)
             )
-            mosque = db.create(mosque_record)
-            return mosque
-
-    def update_mosque(self, mosque_id: UUID, mosque_data):
-        with self.db_repository.get_database_repository() as db:
-            mosque = db.get_by_id(MosqueTable, mosque_id)
-            if mosque is None:
-                return None
-
-            for key, value in mosque_data.dict(exclude_unset=True).items():
-                setattr(mosque, key, value)
-
-            updated_mosque = db.update(mosque)
-            return updated_mosque
+            return updated_record

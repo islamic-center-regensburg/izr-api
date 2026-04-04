@@ -6,13 +6,13 @@ from seed import seed_mosques, seed_prayer_configs
 
 from src.core.logging.logger import logger
 from src.core.dependencies import db_connection
-from src.features.mosque.schemas import MosqueOut
+from src.features.mosque.models.schemas import Mosque
 from src.features.prayer_config.schemas import PrayerConfigurationOut
 from src.core.db.database_repository_provider import DatabaseRepositoryProvider
 
 
 class SeedData(BaseModel):
-    mosques: list[MosqueOut]
+    mosques: list[Mosque]
     prayer_configs: list[PrayerConfigurationOut]
 
 

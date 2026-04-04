@@ -4,15 +4,16 @@ from typing import Any, Dict
 
 
 from src.features.prayer_config.schemas import PrayerConfiguration
+from src.features.prayer_times.models.schemas import AlAdhanQueryParams
 
 
-class PrayerConfigurationQueryAdapter:
+class PrayerConfigurationAdapter:
     @staticmethod
-    def to_query(
+    def to_al_adhan_query_params(
         cfg: PrayerConfiguration | None,
-    ) -> Dict[str, Any]:
+    ) -> AlAdhanQueryParams:
         if cfg is None:
-            return {}
+            return AlAdhanQueryParams()
 
         q: Dict[str, Any] = {
             "method": int(cfg.calculation_method),
@@ -44,4 +45,4 @@ class PrayerConfigurationQueryAdapter:
             ]
             q["tune"] = ",".join(map(str, tune_values))
 
-        return q
+        return AlAdhanQueryParams.model_validate(q)

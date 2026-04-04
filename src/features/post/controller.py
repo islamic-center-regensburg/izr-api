@@ -1,4 +1,6 @@
+from typing import Annotated
 from uuid import UUID
+
 from fastapi import APIRouter, Body, Depends, Query
 
 from src.core.exceptions import guard
@@ -97,7 +99,7 @@ class PostController:
     def __get_post(
         self,
         post_id: UUID,
-        filter: PostFilter = Depends(),
+        filter: Annotated[PostFilter, Query()],
         minio_repository_provider: MinioStorageProvider = Depends(get_minio_repository),
     ) -> PostOut:
         return self.__post_component.get_post(
@@ -108,7 +110,7 @@ class PostController:
     def __get_all_posts(
         self,
         mosque_id: UUID,
-        filters: PostPaginationFilter = Depends(),
+        filters: Annotated[PostPaginationFilter, Query()],
         minio_repository_provider: MinioStorageProvider = Depends(get_minio_repository),
     ) -> PostListOut:
         return self.__post_component.get_all_posts(
