@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from typing import List, Protocol
 
+from src.features.prayer_times.enums import PrayerTimesFiletype
 from src.features.prayer_times.models.schemas import PrayerTimesBase
-from src.features.prayer_times_upload.enums import FileTypeEnum
+
 
 from .csv_parser import PrayerTimesCsvParser
 
@@ -20,11 +21,11 @@ class PrayerTimesParserProvider:
         self._csv = PrayerTimesCsvParser()
         # self._excel = PrayerTimesExcelParser()
 
-    def get_parser(self, file_type: FileTypeEnum) -> PrayerTimesParser:
-        if file_type == FileTypeEnum.CSV:
+    def get_parser(self, file_type: PrayerTimesFiletype) -> PrayerTimesParser:
+        if file_type == PrayerTimesFiletype.CSV:
             return self._csv
 
-        if file_type == FileTypeEnum.XLS:
+        if file_type == PrayerTimesFiletype.XLS:
             # return self._excel
             raise NotImplementedError("Excel parser not wired yet")
 
