@@ -7,7 +7,7 @@ from src.features.mosque.models.tables import MosqueTable
 from src.features.post.schemas import PostTable, PostTranslationTable
 from src.features.prayer_config.schemas import PrayerConfigurationTable
 from src.features.prayer_iqama.schemas import PrayerIqamaTable
-from src.features.prayer_times.schemas import PrayerTimesTable
+from src.features.prayer_times.models.tables import PrayerTimesTable
 from src.features.prayer_times_upload.schemas import PrayerTimeUploadTable
 
 

@@ -3,7 +3,7 @@ from typing import Generic, List, TypeVar
 from fastapi import Query
 from pydantic import BaseModel, ConfigDict
 from pydantic.generics import GenericModel
-from sqlmodel import SQLModel
+from sqlmodel import Field, SQLModel
 
 T = TypeVar("T")
 
@@ -30,6 +30,12 @@ class PaginationBuilder:
             page=page,
             size=size,
         )
+
+
+class VersionedBaseModel(BaseModel):
+    valid_from: datetime = Field(..., description="Valid from date time in UTC")
+    valid_to: datetime = Field(..., description="Valid to date time in UTC")
+    update_reason: str | None = Field(default=None, description="Reason for the update")
 
 
 class PageParams(BaseModel):
