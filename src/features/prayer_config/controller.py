@@ -1,6 +1,8 @@
+from typing import Annotated
 from uuid import UUID
-from fastapi import APIRouter, Depends
-from src.core.db.pagination import PaginatedResponse
+
+from fastapi import APIRouter, Depends, Query
+from src.core.db.schemas import PaginatedList
 from src.core.exceptions import guard
 from src.features.prayer_config.component import PrayerConfigComponent
 from src.features.prayer_config.enums import CalculationMethod
@@ -24,7 +26,7 @@ class PrayerConfigController:
             "",
             endpoint_type=EndpointType.LIST,
             endpoint=self.__get_all_prayer_configs,
-            response_model=PaginatedResponse[PrayerConfigurationOut],
+            response_model=PaginatedList[PrayerConfigurationOut],
             summary="List prayer configurations",
         )
         router_builder.add_method(
@@ -54,8 +56,8 @@ class PrayerConfigController:
 
     @guard
     def __get_all_prayer_configs(
-        self, filter: PrayerConfigurationFilter = Depends()
-    ) -> PaginatedResponse[PrayerConfigurationOut]:
+        self, filter: Annotated[PrayerConfigurationFilter, Query()]
+    ) -> PaginatedList[PrayerConfigurationOut]:
         return self.__prayer_config_component.get_all_prayer_configurations(filter)
 
     @guard

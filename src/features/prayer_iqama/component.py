@@ -1,5 +1,5 @@
 from uuid import UUID
-from src.core.db.pagination import PaginatedResponse
+from src.core.db.schemas import PaginatedList
 from src.features.prayer_iqama.operation import PrayerIqamaOperation
 from src.features.prayer_iqama.schemas import (
     PrayerIqamaFilter,
@@ -19,7 +19,7 @@ class PrayerIqamaComponent:
     def get_prayer_iqamas(
         self,
         filter: PrayerIqamaFilter,
-    ) -> PaginatedResponse[PrayerIqamaOut]:
+    ) -> PaginatedList[PrayerIqamaOut]:
         return self.__prayer_iqama_operation.get_all_prayer_iqamas(filter)
 
     def get_prayer_iqamas_for_mosque(

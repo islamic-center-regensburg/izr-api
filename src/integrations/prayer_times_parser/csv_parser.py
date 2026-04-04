@@ -5,7 +5,7 @@ import io
 from dataclasses import dataclass
 from typing import List, Sequence
 
-from src.features.prayer_times.schemas import PrayerTimesIn
+from src.features.prayer_times.models.schemas import PrayerTimesCreate
 
 
 @dataclass(frozen=True)
@@ -28,7 +28,7 @@ class PrayerTimesCsvParser:
 
     def parse_bytes(
         self, content: bytes, *, encoding: str = "utf-8"
-    ) -> List[PrayerTimesIn]:
+    ) -> List[PrayerTimesCreate]:
         """
         Returns validated rows. Raises ValueError with aggregated errors if invalid.
         """
@@ -45,13 +45,13 @@ class PrayerTimesCsvParser:
                 f"CSV is missing required header(s): {missing}. Found: {reader.fieldnames}"
             )
 
-        rows: List[PrayerTimesIn] = []
+        rows: List[PrayerTimesCreate] = []
         errors: List[ParseError] = []
 
         # row_number: +2 because DictReader starts after header row (which is line 1)
         for i, raw in enumerate(reader, start=2):
             try:
-                rows.append(PrayerTimesIn(**raw))
+                rows.append(PrayerTimesCreate(**raw))
             except Exception as e:
                 raise e
 

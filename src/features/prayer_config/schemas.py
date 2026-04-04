@@ -4,7 +4,7 @@ from uuid import UUID, uuid4
 from pydantic import model_validator
 from sqlmodel import Field, SQLModel
 
-from src.core.db.pagination import PageParams
+from src.core.db.schemas import PageParams
 from src.features.prayer_config.enums import (
     CalculationMethod,
     CalendarMethod,

@@ -1,5 +1,5 @@
 from uuid import UUID
-from src.core.db.pagination import PaginationBuilder
+from src.core.db.schemas import PaginationBuilder
 from src.features.prayer_config.exceptions import PrayerConfigNotFoundException
 from src.features.prayer_config.schemas import (
     PrayerConfigurationFilter,

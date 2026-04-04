@@ -1,6 +1,6 @@
 from src.features.mosque.operation import MosqueOperation
+from src.features.prayer_times.models.schemas import PrayerTimesCreate
 from src.features.prayer_times.operation import PrayerTimesOperation
-from src.features.prayer_times.schemas import PrayerTimesIn
 from src.features.prayer_times_upload.operation import PrayerTimesUploadOperation
 from src.features.prayer_times_upload.schemas import (
     PrayerTimeUploadCreate,
@@ -53,7 +53,7 @@ class PrayerTimesUploadComponent:
             )
         )
 
-        rows: list[PrayerTimesIn] = parser.parse_bytes(data)
+        rows: list[PrayerTimesCreate] = parser.parse_bytes(data)
         self.__prayer_times_operation.save_prayer_times_rows(
             mosque_id=prayer_time_upload_in.mosque_id, upload_id=upload.id, rows=rows
         )

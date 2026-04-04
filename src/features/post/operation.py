@@ -3,7 +3,7 @@ from src.core.db.database_repository import DoesNotExistInDatabaseException
 from src.core.db.database_repository_provider import DatabaseRepositoryProvider
 
 from src.core.db.filters import Filter, Operator
-from src.core.db.pagination import PaginationBuilder
+from src.core.db.schemas import PaginationBuilder
 from src.features.post.schemas import (
     PostPaginationFilter,
     PostRead,

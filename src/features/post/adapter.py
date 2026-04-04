@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any, Callable
 from uuid import UUID
 
-from src.core.db.pagination import PaginationBuilder
+from src.core.db.schemas import PaginationBuilder
 from src.features.post.schemas import MediaOut, PostListOut
 from src.features.post.schemas import PostOut, PostTranslationOut
 

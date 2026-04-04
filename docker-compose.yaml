@@ -6,6 +6,7 @@ include:
 - docker/screen.compose.yaml
 - docker/website.compose.yaml
 - docker/admin.compose.yaml
+- docker/admin.local.compose.yaml
 
 networks:
   izr-api-net:

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import List, Protocol
 
-from src.features.prayer_times.schemas import PrayerTimesBase
+from src.features.prayer_times.models.schemas import PrayerTimes
 from src.features.prayer_times_upload.enums import FileTypeEnum
 
 from .csv_parser import PrayerTimesCsvParser
@@ -12,7 +12,7 @@ from .csv_parser import PrayerTimesCsvParser
 
 
 class PrayerTimesParser(Protocol):
-    def parse_bytes(self, content: bytes) -> List[PrayerTimesBase]: ...
+    def parse_bytes(self, content: bytes) -> List[PrayerTimes]: ...
 
 
 class PrayerTimesParserProvider:
